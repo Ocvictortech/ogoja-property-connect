@@ -1,1 +1,2106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ogoja Property Connect (OPC) — Find. Connect. Move in.</title>
+  <!-- Tailwind CSS for clean, mobile-first responsive styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            opc: {
+              blue: '#1E3A8A',      // Deep blue primary
+              blueDark: '#172554',  // Deeper blue hover
+              purple: '#6D28D9',    // Royal purple accent
+              purpleLight: '#EDE9FE',
+              bg: '#F8FAFC',        // Light grey background
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom scrollbar, sticky header scroll offset, and smooth transitions */
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 4.5rem;
+    }
+    body {
+      overflow-x: hidden;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .fade-in {
+      animation: fadeIn 0.25s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="bg-opc-bg text-slate-800 font-sans antialiased min-h-screen flex flex-col overflow-x-hidden">
+
+  <!-- ==================== DEMONSTRATION NOTICE BANNER ==================== -->
+  <div class="bg-slate-900 text-slate-200 text-[11px] sm:text-xs py-1.5 px-3 sm:px-4 text-center border-b border-slate-800 leading-snug">
+    <span class="inline-block bg-purple-600 text-white font-semibold px-1.5 py-0.5 rounded mr-1">PROTOTYPE DEMO</span>
+    Sample demonstration data for Ogoja, Cross River State.
+  </div>
+
+  <!-- ==================== A. HEADER ==================== -->
+  <header class="bg-white sticky top-0 z-40 border-b border-slate-200 shadow-sm w-full">
+    <div class="max-w-6xl mx-auto px-2.5 sm:px-6 py-2 min-h-[3.75rem] flex items-center justify-between gap-1.5 sm:gap-3">
+      <!-- OPC House & Connection Logo + Brand Name + Tagline -->
+      <a href="#home" onclick="navigateTo('home')" class="flex items-center gap-1.5 sm:gap-2.5 min-w-0 flex-1 group focus:outline-none">
+        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-opc-blue to-opc-purple flex items-center justify-center text-white shadow-sm shrink-0 group-hover:scale-105 transition-transform">
+          <!-- Custom SVG House + Connection Nodes Logo -->
+          <svg class="w-4 h-4 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 10.5L12 3l9 7.5" />
+            <path d="M5 9.5V19a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5" />
+            <!-- Connection link nodes inside house -->
+            <circle cx="9.5" cy="14.5" r="1.5" fill="currentColor" />
+            <circle cx="14.5" cy="12.5" r="1.5" fill="currentColor" />
+            <line x1="10.8" y1="13.9" x2="13.2" y2="13.1" />
+          </svg>
+        </div>
+        <div class="min-w-0 flex-1">
+          <span class="block font-extrabold text-opc-blue text-[12px] min-[360px]:text-[13.5px] sm:text-lg leading-tight tracking-tight truncate">
+            Ogoja Property Connect
+          </span>
+          <span class="block text-[10px] min-[360px]:text-[11px] font-medium text-opc-purple leading-tight truncate mt-0.5">
+            Find. Connect. Move in.
+          </span>
+        </div>
+      </a>
+
+      <!-- Right Navigation Actions -->
+      <nav class="flex items-center gap-1 sm:gap-2.5 shrink-0">
+        <!-- Saved Properties Button -->
+        <button
+          onclick="navigateTo('saved')"
+          aria-label="Saved Properties"
+          class="relative p-1.5 sm:p-2.5 rounded-xl text-slate-700 hover:bg-slate-100 hover:text-opc-purple transition-colors flex items-center gap-1 shrink-0"
+        >
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+          <span class="hidden md:inline text-sm font-medium">Saved</span>
+          <span id="saved-count-badge" class="bg-opc-purple text-white text-[10px] sm:text-[11px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+            0
+          </span>
+        </button>
+
+        <!-- Advertise Property Button -->
+        <button
+          onclick="navigateTo('advertise')"
+          class="bg-opc-blue hover:bg-opc-blueDark text-white text-[11px] min-[360px]:text-xs sm:text-sm font-semibold px-2.5 min-[360px]:px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl shadow-sm transition-colors flex items-center gap-1 shrink-0 whitespace-nowrap"
+        >
+          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Advertise <span class="hidden sm:inline">Property</span></span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ==================== TOAST NOTIFICATION BOX (No alert() used) ==================== -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full px-4 sm:px-0 pointer-events-none"></div>
+
+  <!-- ==================== MAIN CONTENT AREA ==================== -->
+  <main class="flex-grow pt-1">
+
+    <!-- ==================== VIEW 1: HOMEPAGE ==================== -->
+    <div id="view-home" class="fade-in">
+
+      <!-- B. HERO SECTION -->
+      <section class="bg-gradient-to-br from-opc-blue via-indigo-900 to-opc-purple text-white py-8 sm:py-14 px-3.5 sm:px-6">
+        <div class="max-w-4xl mx-auto text-center">
+          <span class="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm text-purple-100 text-[11px] sm:text-xs font-semibold px-3 py-1 rounded-full mb-3.5 max-w-full">
+            <svg class="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+            </svg>
+            <span class="truncate">Igoli &amp; Environs, Ogoja • Cross River</span>
+          </span>
+
+          <h1 class="text-2xl min-[360px]:text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-2.5 leading-tight">
+            Find a place to call home.
+          </h1>
+          <p class="text-slate-200 text-xs min-[360px]:text-sm sm:text-base md:text-lg max-w-2xl mx-auto mb-6 leading-relaxed">
+            Discover available houses and connect directly with landlords and property agents around Ogoja.
+          </p>
+
+          <!-- Search Box -->
+          <form onsubmit="handleSearchSubmit(event)" class="bg-white p-2.5 sm:p-3 rounded-2xl shadow-xl max-w-3xl mx-auto flex flex-col md:flex-row gap-2 sm:gap-2.5 text-slate-800 w-full">
+            <!-- Location / Title Search Input -->
+            <div class="w-full md:flex-1 flex items-center bg-slate-100 rounded-xl px-3 py-2.5 focus-within:ring-2 focus-within:ring-opc-purple min-w-0">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 mr-2 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <input
+                type="text"
+                id="search-input"
+                placeholder="Search community or keyword..."
+                class="bg-transparent w-full min-w-0 text-xs sm:text-sm focus:outline-none placeholder-slate-400"
+              />
+            </div>
+
+            <!-- Dropdowns Row on Mobile, Inline on Desktop -->
+            <div class="grid grid-cols-1 min-[360px]:grid-cols-2 md:flex gap-2 sm:gap-2.5 w-full md:w-auto">
+              <!-- Community Dropdown (Scalable Location Structure) -->
+              <div class="w-full md:w-44 bg-slate-100 rounded-xl px-2.5 sm:px-3 py-2.5 focus-within:ring-2 focus-within:ring-opc-purple min-w-0">
+                <select id="community-select" aria-label="Select Community" class="bg-transparent w-full text-xs sm:text-sm font-medium text-slate-700 focus:outline-none truncate">
+                  <option value="ALL">All Communities</option>
+                  <!-- Populated dynamically from location hierarchy -->
+                </select>
+              </div>
+
+              <!-- Accommodation Category Dropdown -->
+              <div class="w-full md:w-48 bg-slate-100 rounded-xl px-2.5 sm:px-3 py-2.5 focus-within:ring-2 focus-within:ring-opc-purple min-w-0">
+                <select id="hero-category-select" aria-label="Accommodation Type" class="bg-transparent w-full text-xs sm:text-sm font-medium text-slate-700 focus:outline-none truncate">
+                  <option value="ALL">All Property Types</option>
+                  <option value="Self-contained">Self-contained</option>
+                  <option value="Single room">Single room</option>
+                  <option value="One-bedroom flat">One-bedroom flat</option>
+                  <option value="Two-bedroom flat">Two-bedroom flat</option>
+                  <option value="Three-bedroom flat">Three-bedroom flat</option>
+                  <option value="Other residential accommodation">Other residential accommodation</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Search Button -->
+            <button
+              type="submit"
+              class="w-full md:w-auto bg-opc-purple hover:bg-purple-800 text-white font-semibold text-xs sm:text-sm px-5 py-3 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 shrink-0"
+            >
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <span>Search</span>
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- C. CATEGORY FILTERS (6 Exact Categories) -->
+      <section class="max-w-6xl mx-auto px-4 sm:px-6 pt-7 pb-3">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500">
+            Browse by Accommodation Type
+          </h2>
+          <button onclick="resetFilters()" id="reset-filters-btn" class="hidden text-xs font-semibold text-opc-purple hover:underline">
+            Clear filters
+          </button>
+        </div>
+
+        <div id="category-pills" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
+          <!-- Category buttons injected dynamically -->
+        </div>
+      </section>
+
+      <!-- D. PROPERTY LISTINGS -->
+      <section class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
+          <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">
+              Available Accommodation
+            </h2>
+            <p id="results-subtitle" class="text-xs sm:text-sm text-slate-500 mt-0.5">
+              Showing available properties across Ogoja
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs text-slate-500">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            <span>Direct landlord &amp; agent listings</span>
+          </div>
+        </div>
+
+        <!-- Property Grid -->
+        <div id="property-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Property cards rendered dynamically -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden bg-white rounded-2xl border border-slate-200 p-10 text-center my-6">
+          <div class="w-14 h-14 bg-purple-100 text-opc-purple rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-1">No matching properties found</h3>
+          <p class="text-sm text-slate-500 max-w-md mx-auto mb-5">
+            Try clearing your filters or searching another community in Ogoja such as Igoli, Abakpa, or Ishibori.
+          </p>
+          <button onclick="resetFilters()" class="bg-opc-blue text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-opc-blueDark transition-colors">
+            Show All Available Listings
+          </button>
+        </div>
+      </section>
+
+      <!-- Call-to-action Banner for Landlords & Agents -->
+      <section class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-opc-purple bg-purple-50 px-3 py-1 rounded-full">
+              For Landlords &amp; Agents
+            </span>
+            <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mt-2">
+              Have a vacant room or flat in Ogoja?
+            </h3>
+            <p class="text-sm text-slate-600 mt-1 max-w-xl">
+              List your residential accommodation on Ogoja Property Connect so prospective tenants in Igoli and surrounding communities can reach you directly.
+            </p>
+          </div>
+          <button
+            onclick="navigateTo('advertise')"
+            class="bg-opc-purple hover:bg-purple-800 text-white font-semibold text-sm px-6 py-3.5 rounded-xl shadow-sm transition-colors shrink-0 w-full md:w-auto text-center"
+          >
+            Advertise a Property
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- ==================== VIEW 2: PROPERTY DETAILS PAGE ==================== -->
+    <div id="view-details" class="hidden fade-in max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <!-- Back Button -->
+      <button
+        onclick="navigateTo('home')"
+        class="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-opc-blue mb-5 py-2 px-3 rounded-xl hover:bg-white transition-colors"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to Property Listings
+      </button>
+
+      <div id="property-details-content">
+        <!-- Populated dynamically when a property is opened -->
+      </div>
+    </div>
+
+    <!-- ==================== VIEW 3: SAVED PROPERTIES ==================== -->
+    <div id="view-saved" class="hidden fade-in max-w-6xl mx-auto px-4 sm:px-6 py-8">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900">Saved Properties</h1>
+          <p class="text-sm text-slate-500">Available properties you bookmarked to compare later.</p>
+        </div>
+        <button onclick="navigateTo('home')" class="text-sm font-semibold text-opc-blue hover:underline">
+          &larr; Back to Search
+        </button>
+      </div>
+
+      <div id="saved-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Saved cards injected dynamically -->
+      </div>
+
+      <div id="saved-empty" class="hidden bg-white rounded-2xl border border-slate-200 p-10 text-center">
+        <p class="text-slate-600 font-medium mb-4">You haven't saved any available properties yet.</p>
+        <button onclick="navigateTo('home')" class="bg-opc-blue text-white text-sm font-semibold px-5 py-2.5 rounded-xl">
+          Browse Available Properties
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== VIEW 4: PROPERTY ADVERTISEMENT FORM ==================== -->
+    <div id="view-advertise" class="hidden fade-in max-w-3xl mx-auto px-3.5 sm:px-6 py-6 sm:py-8">
+      <button onclick="navigateTo('home')" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-opc-blue mb-4 py-1.5">
+        &larr; Back to Home
+      </button>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-8">
+        <div class="border-b border-slate-100 pb-5 mb-6">
+          <span class="text-xs font-bold uppercase tracking-wider text-opc-purple bg-purple-50 px-2.5 py-1 rounded-md">
+            Landlord &amp; Agent Portal
+          </span>
+          <h1 class="text-xl sm:text-2xl font-bold text-slate-900 mt-2">Advertise Residential Accommodation</h1>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
+            Submit accurate property details. All submissions are assigned a unique Reference ID and marked <strong class="text-amber-700">Pending Review</strong> before publication.
+          </p>
+        </div>
+
+        <!-- Submission Success Confirmation Box -->
+        <div id="ad-success-box" class="hidden bg-emerald-50 border border-emerald-200 rounded-2xl p-5 sm:p-6 mb-6">
+          <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <h3 class="font-bold text-emerald-900 text-base">Property Submitted — Awaiting Administrator Review</h3>
+              <p class="text-xs sm:text-sm text-emerald-800 mt-1 leading-relaxed">
+                Thank you! Your listing has been saved with Reference ID:
+                <span id="ad-ref-id" class="inline-block font-mono font-bold bg-white text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded mt-1">OPC-0000</span>
+              </p>
+              <p class="text-xs text-emerald-800 mt-2 leading-relaxed">
+                Status: <strong>Pending Review</strong>. Your contact numbers remain private and the listing will not appear publicly until approved by an OPC administrator.
+              </p>
+              <div class="mt-4 flex flex-wrap gap-2.5">
+                <button type="button" onclick="resetAdForm()" class="bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl hover:bg-emerald-800">
+                  Submit Another Property
+                </button>
+                <button type="button" onclick="navigateTo('home')" class="bg-white text-emerald-800 border border-emerald-300 text-xs font-semibold px-4 py-2.5 rounded-xl hover:bg-emerald-100">
+                  Return to Homepage
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <form id="advertise-form" onsubmit="handleAdvertiseSubmit(event)" novalidate class="space-y-6">
+          <!-- Section 1: Provider Information -->
+          <div>
+            <h2 class="text-base font-bold text-opc-blue mb-3">1. Provider Information</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="ad-provider-name" class="block text-xs font-semibold text-slate-700 mb-1">Full Name *</label>
+                <input type="text" id="ad-provider-name" required placeholder="e.g. Mr. Patrick Ogar" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-opc-purple" />
+              </div>
+              <div>
+                <label for="ad-provider-type" class="block text-xs font-semibold text-slate-700 mb-1">Provider Type *</label>
+                <select id="ad-provider-type" required class="w-full rounded-xl border border-slate-300 px-3.5 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-opc-purple">
+                  <option value="">Select Landlord or Agent...</option>
+                  <option value="Landlord">Landlord</option>
+                  <option value="Agent">Agent</option>
+                </select>
+              </div>
+              <div>
+                <label for="ad-phone" class="block text-xs font-semibold text-slate-700 mb-1">Phone Number *</label>
+                <input type="tel" id="ad-phone" inputmode="tel" required placeholder="e.g. 0803 000 0000" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-opc-purple" />
+              </div>
+              <div>
+                <label for="ad-whatsapp" class="block text-xs font-semibold text-slate-700 mb-1">WhatsApp Number *</label>
+                <input type="tel" id="ad-whatsapp" inputmode="tel" required placeholder="e.g. 0803 000 0000" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-opc-purple" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Property Information -->
+          <div class="pt-4 border-t border-slate-100">
+            <h2 class="text-base font-bold text-opc-blue mb-3">2. Property Information</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="sm:col-span-2">
+                <label for="ad-title" class="block text-xs font-semibold text-slate-700 mb-1">Property Title *</label>
+                <input type="text" id="ad-title" required placeholder="e.g. Tiled Self-Contained Apartment" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-opc-purple" />
+              </div>
+
+              <div>
+                <label for="ad-category" class="block text-xs font-semibold text-slate-700 mb-1">Accommodation Category *</label>
+                <select id="ad-category" required class="w-full rounded-xl border border-slate-300 px-3.5 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-opc-purple">
+                  <option value="">Select category...</option>
+                  <option value="Self-contained">Self-contained</option>
+                  <option value="Single room">Single room</option>
+                  <option value="One-bedroom flat">One-bedroom flat</option>
+                  <option value="Two-bedroom flat">Two-bedroom flat</option>
+                  <option value="Three-bedroom flat">Three-bedroom flat</option>
+                  <option value="Other residential accommodation">Other residential accommodation</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="ad-town" class="block text-xs font-semibold text-slate-700 mb-1">Town *</label>
+                <input type="text" id="ad-town" value="Ogoja" required class="w-full rounded-xl border border-slate-300 px-3.5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-opc-purple" />
+              </div>
+
+              <div>
+                <label for="ad-community" class="block text-xs font-semibold text-slate-700 mb-1">Community *</label>
+                <input type="text" id="ad-community" required placeholder="e.g. Igoli, Abakpa, Ishibori, Ndok" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-opc-purple" />
+              </div>
+
+              <div>
+                <label for="ad-landmark" class="block text-xs font-semibold text-slate-700 mb-1">Street or Nearby Landmark *</label>
+                <input type="text" id="ad-landmark" required placeholder="e.g. Near Igoli Main Market" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-opc-purple" />
+              </div>
+
+              <div class="sm:col-span-2">
+                <label for="ad-description" class="block text-xs font-semibold text-slate-700 mb-1">Short Property Description *</label>
+                <textarea id="ad-description" rows="3" required placeholder="Briefly describe the rooms, water supply, fencing, and surroundings..." class="w-full rounded-xl border border-slate-300 px-3.5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-opc-purple"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Rent and Optional Additional Charges -->
+          <div class="pt-4 border-t border-slate-100">
+            <h2 class="text-base font-bold text-opc-blue mb-1">3. Rent &amp; Optional Charges (₦)</h2>
+            <p class="text-xs text-slate-500 mb-4">
+              Annual rent is required. Only tick the additional charges that actually apply to this accommodation.
+            </p>
+
+            <!-- Compulsory Annual Rent -->
+            <div class="mb-4">
+              <label for="ad-rent" class="block text-xs font-semibold text-slate-700 mb-1">Annual Rent (₦) *</label>
+              <input
+                type="number"
+                id="ad-rent"
+                inputmode="numeric"
+                min="1"
+                required
+                oninput="updateAdTotalCalculation()"
+                placeholder="e.g. 200000"
+                class="w-full rounded-xl border border-slate-300 px-3.5 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-opc-purple"
+              />
+            </div>
+
+            <!-- Optional Charges Checkboxes & Conditional Amount Inputs -->
+            <div class="space-y-3">
+              <!-- 1. Optional Agreement Fee -->
+              <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5">
+                <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="chk-agreement"
+                    onchange="toggleOptionalCharge('agreement')"
+                    class="w-4 h-4 rounded text-opc-purple focus:ring-opc-purple"
+                  />
+                  <span class="text-xs sm:text-sm font-semibold text-slate-800">Agreement fee applies</span>
+                </label>
+                <div id="wrap-agreement" class="hidden mt-3 pt-2.5 border-t border-slate-200/80">
+                  <label for="ad-agreement" class="block text-xs font-medium text-slate-600 mb-1">Agreement Fee Amount (₦) *</label>
+                  <input
+                    type="number"
+                    id="ad-agreement"
+                    inputmode="numeric"
+                    min="0"
+                    oninput="updateAdTotalCalculation()"
+                    placeholder="e.g. 20000"
+                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-opc-purple"
+                  />
+                </div>
+              </div>
+
+              <!-- 2. Optional Agency Fee -->
+              <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5">
+                <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="chk-agency"
+                    onchange="toggleOptionalCharge('agency')"
+                    class="w-4 h-4 rounded text-opc-purple focus:ring-opc-purple"
+                  />
+                  <span class="text-xs sm:text-sm font-semibold text-slate-800">Agency fee applies</span>
+                </label>
+                <div id="wrap-agency" class="hidden mt-3 pt-2.5 border-t border-slate-200/80">
+                  <label for="ad-agency" class="block text-xs font-medium text-slate-600 mb-1">Agency Fee Amount (₦) *</label>
+                  <input
+                    type="number"
+                    id="ad-agency"
+                    inputmode="numeric"
+                    min="0"
+                    oninput="updateAdTotalCalculation()"
+                    placeholder="e.g. 20000"
+                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-opc-purple"
+                  />
+                </div>
+              </div>
+
+              <!-- 3. Optional Caution Fee -->
+              <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5">
+                <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="chk-caution"
+                    onchange="toggleOptionalCharge('caution')"
+                    class="w-4 h-4 rounded text-opc-purple focus:ring-opc-purple"
+                  />
+                  <span class="text-xs sm:text-sm font-semibold text-slate-800">Caution / refundable deposit applies</span>
+                </label>
+                <div id="wrap-caution" class="hidden mt-3 pt-2.5 border-t border-slate-200/80">
+                  <label for="ad-caution" class="block text-xs font-medium text-slate-600 mb-1">Caution Fee Amount (₦) *</label>
+                  <input
+                    type="number"
+                    id="ad-caution"
+                    inputmode="numeric"
+                    min="0"
+                    oninput="updateAdTotalCalculation()"
+                    placeholder="e.g. 15000"
+                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-opc-purple"
+                  />
+                </div>
+              </div>
+
+              <!-- 4. Optional Other Charges -->
+              <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5">
+                <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="chk-other"
+                    onchange="toggleOptionalCharge('other')"
+                    class="w-4 h-4 rounded text-opc-purple focus:ring-opc-purple"
+                  />
+                  <span class="text-xs sm:text-sm font-semibold text-slate-800">Other charges apply (e.g. security, sanitation, water)</span>
+                </label>
+                <div id="wrap-other" class="hidden mt-3 pt-2.5 border-t border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label for="ad-other-charges-amount" class="block text-xs font-medium text-slate-600 mb-1">Charge Amount (₦) *</label>
+                    <input
+                      type="number"
+                      id="ad-other-charges-amount"
+                      inputmode="numeric"
+                      min="0"
+                      oninput="updateAdTotalCalculation()"
+                      placeholder="e.g. 5000"
+                      class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-opc-purple"
+                    />
+                  </div>
+                  <div>
+                    <label for="ad-other-charges-note" class="block text-xs font-medium text-slate-600 mb-1">Description of Charge *</label>
+                    <input
+                      type="text"
+                      id="ad-other-charges-note"
+                      placeholder="e.g. Annual security & sanitation"
+                      class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-opc-purple"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Automatic Total Initial Payment Box -->
+            <div class="mt-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-purple-200 rounded-2xl p-4 flex items-center justify-between gap-3">
+              <div>
+                <span class="block text-xs font-bold uppercase tracking-wider text-slate-600">Total Initial Payment</span>
+                <span id="ad-total-breakdown-hint" class="text-[11px] text-slate-500">Annual rent only (no additional charges selected)</span>
+              </div>
+              <div id="ad-total-display" class="text-xl sm:text-2xl font-extrabold text-opc-purple shrink-0">
+                ₦0
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Property Photographs -->
+          <div class="pt-4 border-t border-slate-100">
+            <h2 class="text-base font-bold text-opc-blue mb-1">4. Property Photographs</h2>
+            <p class="text-xs text-slate-500 mb-3">
+              Select clear photos from your phone gallery. In this prototype, photos are previewed temporarily in your browser and are not uploaded to a server yet.
+            </p>
+
+            <!-- Accessible native file input (not display:none so Android WebViews/browsers open the picker reliably) -->
+            <div class="relative">
+              <label
+                for="propertyPhotos"
+                class="flex flex-col items-center justify-center w-full border-2 border-dashed border-slate-300 hover:border-opc-purple active:bg-purple-50 rounded-2xl p-5 bg-slate-50 cursor-pointer transition-colors text-center select-none"
+              >
+                <svg class="w-8 h-8 text-opc-purple mb-2" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span class="inline-block bg-opc-purple text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl shadow-sm">
+                  Upload Property Photos
+                </span>
+                <span class="text-[11px] text-slate-500 mt-1.5">Tap to open Gallery or Camera &bull; Select one or more images</span>
+              </label>
+              <input
+                type="file"
+                id="propertyPhotos"
+                accept="image/*"
+                multiple
+                class="sr-only"
+              />
+            </div>
+
+            <!-- Photo Selection Status & Count -->
+            <div id="ad-photo-status" class="mt-2.5 flex items-center justify-between text-xs">
+              <span id="ad-photo-count" class="font-semibold text-slate-600">0 photographs selected</span>
+              <label for="propertyPhotos" id="ad-add-more-photos" class="hidden font-semibold text-opc-purple hover:underline cursor-pointer">
+                + Add more photos
+              </label>
+            </div>
+            <p id="ad-photo-feedback" class="hidden mt-1.5 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"></p>
+
+            <!-- Photo Preview Grid -->
+            <div id="ad-photo-preview-grid" class="hidden grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
+              <!-- Thumbnails injected dynamically -->
+            </div>
+          </div>
+
+          <!-- Section 5: Consent and Submission -->
+          <div class="pt-4 border-t border-slate-100">
+            <h2 class="text-base font-bold text-opc-blue mb-3">5. Consent &amp; Submission</h2>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <label class="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" id="ad-consent" required class="mt-1 w-4 h-4 rounded text-opc-purple focus:ring-opc-purple shrink-0" />
+                <span class="text-xs text-slate-700 leading-relaxed">
+                  I confirm that I am the landlord or an agent authorized to advertise this property. The information and photographs provided are accurate, and I agree that Ogoja Property Connect may review this submission before publication. *
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div id="ad-error-msg" class="hidden text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-xl p-3.5 leading-relaxed"></div>
+
+          <button type="submit" class="w-full bg-opc-blue hover:bg-opc-blueDark text-white font-bold text-sm py-3.5 rounded-xl shadow-sm transition-colors">
+            Submit Property
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==================== VIEW 5: ADMINISTRATOR REVIEW DEMO ==================== -->
+    <div id="view-admin" class="hidden fade-in max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="text-xs text-amber-900">
+          <strong>PROTOTYPE ADMIN PREVIEW:</strong> This interface demonstrates listing moderation with sample data. In production, Supabase Row Level Security (RLS) will ensure only authenticated administrators can query non-public records or provider contact details.
+        </div>
+        <button onclick="navigateTo('home')" class="text-xs font-bold text-opc-blue hover:underline shrink-0">
+          Exit Admin Demo &rarr;
+        </button>
+      </div>
+
+      <h1 class="text-2xl font-bold text-slate-900 mb-1">Administrator Listing Review</h1>
+      <p class="text-sm text-slate-500 mb-6">
+        Review all submissions across <strong>Pending Review</strong>, <strong>Approved</strong>, <strong>Rejected</strong>, and <strong>Unavailable</strong> statuses.
+      </p>
+
+      <!-- 1. Pending Submissions Section -->
+      <div class="mb-8">
+        <h2 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+          Pending Review (<span id="admin-pending-count">0</span>)
+        </h2>
+        <div id="admin-pending-list" class="space-y-4">
+          <!-- Pending items rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- 2. Approved & Unavailable Properties Section -->
+      <div class="mb-8">
+        <h2 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+          Approved &amp; Unavailable Properties (<span id="admin-approved-count">0</span>)
+        </h2>
+        <div id="admin-active-list" class="space-y-3">
+          <!-- Approved & Unavailable items rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- 3. Rejected Properties Section -->
+      <div>
+        <h2 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-rose-600"></span>
+          Rejected Submissions (<span id="admin-rejected-count">0</span>)
+        </h2>
+        <div id="admin-rejected-list" class="space-y-3">
+          <!-- Rejected items rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==================== E. FOOTER ==================== -->
+  <footer class="bg-slate-900 text-slate-300 mt-12 border-t border-slate-800">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <!-- Brand Summary -->
+      <div>
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-8 h-8 rounded-lg bg-opc-purple flex items-center justify-center text-white">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 10.5L12 3l9 7.5" />
+              <path d="M5 9.5V19a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5" />
+            </svg>
+          </div>
+          <span class="font-bold text-white text-base">Ogoja Property Connect</span>
+        </div>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Connecting prospective tenants directly with landlords and property agents across Igoli, Ogoja, and Cross River State.
+        </p>
+        <p class="text-xs font-semibold text-purple-400 mt-2">Find. Connect. Move in.</p>
+      </div>
+
+      <!-- About OPC -->
+      <div>
+        <h4 class="text-white font-semibold text-sm mb-3">About OPC</h4>
+        <ul class="space-y-2 text-xs text-slate-400">
+          <li>Local residential housing discovery</li>
+          <li>Transparent rent &amp; charge breakdowns</li>
+          <li>Serving Igoli, Abakpa, Ishibori &amp; environs</li>
+          <li>Built to scale across Cross River State</li>
+        </ul>
+      </div>
+
+      <!-- Quick Links -->
+      <div>
+        <h4 class="text-white font-semibold text-sm mb-3">Quick Links</h4>
+        <ul class="space-y-2 text-xs">
+          <li><button onclick="navigateTo('home')" class="hover:text-white transition-colors">Browse Accommodation</button></li>
+          <li><button onclick="navigateTo('advertise')" class="hover:text-white transition-colors">Advertise a Property</button></li>
+          <li><button onclick="navigateTo('saved')" class="hover:text-white transition-colors">Saved Properties</button></li>
+          <li><button onclick="navigateTo('admin')" class="text-slate-500 hover:text-purple-300 transition-colors">Admin Review Demo</button></li>
+        </ul>
+      </div>
+
+      <!-- Contact & Privacy -->
+      <div>
+        <h4 class="text-white font-semibold text-sm mb-3">Contact &amp; Privacy</h4>
+        <p class="text-xs text-slate-400 mb-2">
+          Demo Support Desk: Igoli, Ogoja LGA, Cross River State, Nigeria.
+        </p>
+        <p class="text-[11px] text-slate-500 leading-relaxed">
+          <strong>Privacy Information:</strong> Provider phone numbers are shown only on individual property pages for legitimate rental enquiries. Demo listings use fictional placeholder contacts.
+        </p>
+      </div>
+    </div>
+
+    <div class="border-t border-slate-800 py-4 px-4 text-center text-xs text-slate-500">
+      &copy; 2026 Ogoja Property Connect (OPC). Frontend Prototype — Sample Demonstration Data Only.
+    </div>
+  </footer>
+
+  <!-- ==================== JAVASCRIPT APPLICATION LOGIC ==================== -->
+  <script>
+    /**
+     * 1. SCALABLE LOCATION HIERARCHY
+     * Designed so new LGAs, towns, and communities across Cross River State
+     * can be added without modifying UI code.
+     */
+    const LOCATION_DATA = {
+      state: "Cross River State",
+      towns: [
+        {
+          name: "Ogoja",
+          communities: [
+            "Igoli",
+            "Abakpa",
+            "Ishibori",
+            "Ndok",
+            "Mbube",
+            "Ekpogrinya",
+            "Bansara"
+          ]
+        }
+      ]
+    };
+
+    /**
+     * 2. EXACT SIX ACCOMMODATION CATEGORIES
+     */
+    const ACCOMMODATION_CATEGORIES = [
+      "Self-contained",
+      "Single room",
+      "One-bedroom flat",
+      "Two-bedroom flat",
+      "Three-bedroom flat",
+      "Other residential accommodation"
+    ];
+
+    /**
+     * 3. SAMPLE DEMONSTRATION PROPERTIES
+     * Standardized listing status lifecycle:
+     * "Pending Review" | "Approved" | "Rejected" | "Unavailable"
+     * Public visibility rule: ONLY properties where status === "Approved" are shown publicly.
+     */
+    let properties = [
+      {
+        id: "OPC-101",
+        title: "Tiled Self-Contained Apartment",
+        category: "Self-contained",
+        state: "Cross River State",
+        town: "Ogoja",
+        community: "Igoli",
+        landmark: "Off Hospital Road, near Igoli Central Junction",
+        annualRent: 160000,
+        agreementFee: 15000,
+        agencyFee: 15000,
+        cautionFee: 10000,
+        otherChargesAmount: 5000,
+        otherChargesNote: "Annual compound security & sanitation levy",
+        description: "SAMPLE DEMO LISTING: Newly renovated self-contained room with private kitchen slab, modern bathroom, full floor tiles, and steady borehole water inside a fenced, gated compound in Igoli.",
+        facilities: ["Borehole Water", "Fenced & Gated", "Tiled Floors", "Private Kitchenette", "Prepaid Meter"],
+        status: "Approved", // Pending Review | Approved | Rejected | Unavailable
+        provider: {
+          name: "Demo Landlord A (Sample)",
+          type: "Landlord",
+          phone: "08000000101",
+          whatsapp: "2348000000101",
+          isDemoContact: true
+        },
+        images: [
+          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=900&q=80"
+        ]
+      },
+      {
+        id: "OPC-102",
+        title: "Two-Bedroom Flat with Parking",
+        category: "Two-bedroom flat",
+        state: "Cross River State",
+        town: "Ogoja",
+        community: "Igoli",
+        landmark: "Behind St. Benedict Cathedral Axis, Igoli",
+        annualRent: 320000,
+        agreementFee: 30000,
+        agencyFee: 30000,
+        cautionFee: 20000,
+        otherChargesAmount: 0,
+        otherChargesNote: "",
+        description: "SAMPLE DEMO LISTING: Comfortable two-bedroom family flat featuring a spacious sitting room, dining corner, two toilets/baths, cross ventilation, and ample compound parking.",
+        facilities: ["2 Toilets & Baths", "Compound Parking", "Running Water", "POP / PVC Ceiling", "Calm Neighbourhood"],
+        status: "Approved",
+        provider: {
+          name: "Demo Property Agency B (Sample)",
+          type: "Agent",
+          phone: "08000000102",
+          whatsapp: "2348000000102",
+          isDemoContact: true
+        },
+        images: [
+          "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=900&q=80"
+        ]
+      },
+      {
+        id: "OPC-103",
+        title: "Clean Single Room in Fenced Yard",
+        category: "Single room",
+        state: "Cross River State",
+        town: "Ogoja",
+        community: "Abakpa",
+        landmark: "Near Abakpa Market Road",
+        annualRent: 75000,
+        agreementFee: 7500,
+        agencyFee: 0,
+        cautionFee: 0,
+        otherChargesAmount: 0,
+        otherChargesNote: "",
+        description: "SAMPLE DEMO LISTING: Neat and affordable single room directly from the landlord with agreement fee only. Shared clean conveniences and reliable borehole water supply.",
+        facilities: ["Burglary Proof Windows", "Clean Shared Conveniences", "Water Supply", "Close to Main Road"],
+        status: "Approved",
+        provider: {
+          name: "Demo Landlord C (Sample)",
+          type: "Landlord",
+          phone: "08000000103",
+          whatsapp: "2348000000103",
+          isDemoContact: true
+        },
+        images: [
+          "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80"
+        ]
+      },
+      {
+        id: "OPC-104",
+        title: "One-Bedroom Flat (Room & Parlour)",
+        category: "One-bedroom flat",
+        state: "Cross River State",
+        town: "Ogoja",
+        community: "Ishibori",
+        landmark: "Off Ishibori Palace Road",
+        annualRent: 220000,
+        agreementFee: 0,
+        agencyFee: 0,
+        cautionFee: 0,
+        otherChargesAmount: 0,
+        otherChargesNote: "",
+        description: "SAMPLE DEMO LISTING: Direct landlord letting with zero agency, agreement, or caution fees. Well-finished room and parlour self-contained flat with separate kitchen and tiled floors.",
+        facilities: ["Separate Kitchen", "Visitor Toilet", "Fenced Compound", "Tiled Throughout", "Borehole"],
+        status: "Approved",
+        provider: {
+          name: "Demo Landlord D (Sample)",
+          type: "Landlord",
+          phone: "08000000104",
+          whatsapp: "2348000000104",
+          isDemoContact: true
+        },
+        images: [
+          "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&q=80"
+        ]
+      },
+      {
+        id: "OPC-105",
+        title: "Three-Bedroom Family Bungalow",
+        category: "Three-bedroom flat",
+        state: "Cross River State",
+        town: "Ogoja",
+        community: "Ndok",
+        landmark: "Along Ndok Junction — Igoli Link Road",
+        annualRent: 450000,
+        agreementFee: 45000,
+        agencyFee: 45000,
+        cautionFee: 30000,
+        otherChargesAmount: 0,
+        otherChargesNote: "",
+        description: "SAMPLE DEMO LISTING: Spacious three-bedroom bungalow with en-suite master bedroom, large kitchen with store, front veranda, and private gated compound.",
+        facilities: ["Master En-suite", "Kitchen Store", "Private Gate", "Overhead Water Tank", "3-Car Parking"],
+        status: "Approved",
+        provider: {
+          name: "Demo Landlord E (Sample)",
+          type: "Landlord",
+          phone: "08000000105",
+          whatsapp: "2348000000105",
+          isDemoContact: true
+        },
+        images: [
+          "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80"
+        ]
+      },
+      {
+        id: "OPC-106",
+        title: "Furnished Studio Quarters (GRA)",
+        category: "Other residential accommodation",
+        state: "Cross River State",
+        town: "Ogoja",
+        community: "Igoli",
+        landmark: "GRA Phase 1 Axis, Igoli",
+        annualRent: 380000,
+        agreementFee: 20000,
+        agencyFee: 0,
+        cautionFee: 25000,
+        otherChargesAmount: 0,
+        otherChargesNote: "",
+        description: "SAMPLE DEMO LISTING: Quiet residential boys' quarters studio apartment in GRA Igoli (currently marked Unavailable).",
+        facilities: ["Solar Inverter Ready", "Serene GRA Location", "Water Heater", "Gated Security"],
+        status: "Unavailable",
+        provider: {
+          name: "Demo Landlord F (Sample)",
+          type: "Landlord",
+          phone: "08000000106",
+          whatsapp: "2348000000106",
+          isDemoContact: true
+        },
+        images: [
+          "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?auto=format&fit=crop&w=900&q=80"
+        ]
+      },
+      {
+        id: "OPC-107",
+        title: "Painted Self-Contained Near College",
+        category: "Self-contained",
+        state: "Cross River State",
+        town: "Ogoja",
+        community: "Igoli",
+        landmark: "Near School of Nursing Axis, Igoli",
+        annualRent: 145000,
+        agreementFee: 15000,
+        agencyFee: 0,
+        cautionFee: 0,
+        otherChargesAmount: 0,
+        otherChargesNote: "",
+        description: "SAMPLE PENDING SUBMISSION: Newly painted self-contained room awaiting OPC administrator review before public listing.",
+        facilities: ["Borehole Water", "Tiled Floor", "Fenced Yard"],
+        status: "Pending Review",
+        provider: {
+          name: "Demo Applicant G (Sample)",
+          type: "Agent",
+          phone: "08000000107",
+          whatsapp: "2348000000107",
+          isDemoContact: true
+        },
+        images: [
+          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=80"
+        ]
+      }
+    ];
+
+    // Application Filter & Navigation State
+    let state = {
+      searchQuery: "",
+      selectedCommunity: "ALL",
+      selectedCategory: "ALL",
+      savedIds: JSON.parse(localStorage.getItem("opc_saved_ids") || "[]"),
+      currentView: "home",
+      activePropertyId: null
+    };
+
+    // Temporary browser-held photo previews for the Advertise form
+    let pendingAdPhotos = [];
+
+    /**
+     * CENTRALIZED PUBLIC VISIBILITY HELPER
+     * Enforces business rule: Only properties with Approval status = Approved
+     * AND Availability status = Available (represented by status === "Approved")
+     * may appear publicly.
+     */
+    function isPubliclyVisible(prop) {
+      return Boolean(prop && prop.status === "Approved");
+    }
+
+    // Load any locally saved prototype submissions from previous sessions
+    function loadStoredSubmissions() {
+      try {
+        const stored = JSON.parse(localStorage.getItem("opc_prototype_submissions") || "[]");
+        if (Array.isArray(stored) && stored.length > 0) {
+          stored.forEach(item => {
+            if (!properties.some(existing => existing.id === item.id)) {
+              properties.unshift(item);
+            }
+          });
+        }
+      } catch (e) {
+        // Ignore storage read issues in restricted browser modes
+      }
+    }
+
+    // ==================== INITIALIZATION ====================
+    window.addEventListener("DOMContentLoaded", () => {
+      loadStoredSubmissions();
+      populateLocationDropdown();
+      renderCategoryPills();
+      updateSavedBadge();
+      renderPropertyListings();
+      renderAdminPanel();
+      initPhotoUploadControl();
+    });
+
+    // Populate scalable community selector
+    function populateLocationDropdown() {
+      const select = document.getElementById("community-select");
+      LOCATION_DATA.towns.forEach(town => {
+        town.communities.forEach(comm => {
+          const opt = document.createElement("option");
+          opt.value = comm;
+          opt.textContent = `${comm} (${town.name})`;
+          select.appendChild(opt);
+        });
+      });
+    }
+
+    // Format Nigerian Naira currency
+    function formatNGN(amount) {
+      return "₦" + Number(amount || 0).toLocaleString("en-NG");
+    }
+
+    // Show non-intrusive toast message (replaces alert())
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      const bgClass = type === "success" ? "bg-emerald-700" : type === "warning" ? "bg-amber-700" : "bg-slate-900";
+      toast.className = `${bgClass} text-white text-xs font-medium px-4 py-3 rounded-xl shadow-lg pointer-events-auto fade-in flex items-center justify-between gap-3`;
+      toast.innerHTML = `<span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 3200);
+    }
+
+    // ==================== NAVIGATION ====================
+    function navigateTo(view, propertyId = null) {
+      const views = ["home", "details", "saved", "advertise", "admin"];
+      views.forEach(v => {
+        document.getElementById(`view-${v}`).classList.add("hidden");
+      });
+
+      state.currentView = view;
+      document.getElementById(`view-${view}`).classList.remove("hidden");
+
+      if (view === "home") {
+        renderPropertyListings();
+      } else if (view === "details" && propertyId) {
+        state.activePropertyId = propertyId;
+        renderPropertyDetails(propertyId);
+      } else if (view === "saved") {
+        renderSavedProperties();
+      } else if (view === "admin") {
+        renderAdminPanel();
+      }
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // ==================== SEARCH & CATEGORY FILTERING ====================
+    function renderCategoryPills() {
+      const container = document.getElementById("category-pills");
+      const allCategories = ["ALL", ...ACCOMMODATION_CATEGORIES];
+
+      container.innerHTML = allCategories.map(cat => {
+        const isActive = state.selectedCategory === cat;
+        const label = cat === "ALL" ? "All Categories" : cat;
+        return `
+          <button
+            type="button"
+            onclick="selectCategory('${cat}')"
+            class="px-4 py-2 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap transition-all border ${
+              isActive
+                ? "bg-opc-blue text-white border-opc-blue shadow-sm"
+                : "bg-white text-slate-700 border-slate-200 hover:border-opc-purple hover:text-opc-purple"
+            }"
+          >
+            ${label}
+          </button>
+        `;
+      }).join("");
+    }
+
+    function selectCategory(category) {
+      state.selectedCategory = category;
+      document.getElementById("hero-category-select").value = category;
+      renderCategoryPills();
+      renderPropertyListings();
+    }
+
+    function handleSearchSubmit(event) {
+      event.preventDefault();
+      state.searchQuery = document.getElementById("search-input").value.trim().toLowerCase();
+      state.selectedCommunity = document.getElementById("community-select").value;
+      state.selectedCategory = document.getElementById("hero-category-select").value;
+      renderCategoryPills();
+      renderPropertyListings();
+    }
+
+    function resetFilters() {
+      state.searchQuery = "";
+      state.selectedCommunity = "ALL";
+      state.selectedCategory = "ALL";
+      document.getElementById("search-input").value = "";
+      document.getElementById("community-select").value = "ALL";
+      document.getElementById("hero-category-select").value = "ALL";
+      renderCategoryPills();
+      renderPropertyListings();
+    }
+
+    // ==================== PROPERTY CARD RENDERING ====================
+    function createPropertyCardHTML(prop) {
+      const isSaved = state.savedIds.includes(prop.id);
+      const fallbackImg = "https://placehold.co/800x500/1E3A8A/FFFFFF?text=Ogoja+Property+Connect";
+
+      return `
+        <article class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
+          <!-- Property Image + Badges -->
+          <div class="relative h-48 bg-slate-200 overflow-hidden cursor-pointer" onclick="navigateTo('details', '${prop.id}')">
+            <img
+              src="${prop.images[0] || fallbackImg}"
+              alt="${prop.title}"
+              onerror="this.src='${fallbackImg}'"
+              class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+            />
+            <!-- Availability Badge -->
+            <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm bg-emerald-600 text-white">
+              Available
+            </span>
+
+            <!-- Save Heart Button -->
+            <button
+              type="button"
+              onclick="event.stopPropagation(); toggleSaveProperty('${prop.id}')"
+              aria-label="Save property"
+              class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm hover:scale-105 transition-transform ${
+                isSaved ? "text-rose-600" : "text-slate-600"
+              }"
+            >
+              <svg class="w-5 h-5" fill="${isSaved ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </button>
+
+            <!-- Demo Tag -->
+            <span class="absolute bottom-2.5 left-3 bg-slate-900/80 backdrop-blur-xs text-white text-[10px] font-semibold px-2.5 py-0.5 rounded-md">
+              Sample Data
+            </span>
+          </div>
+
+          <!-- Card Body -->
+          <div class="p-4 sm:p-5 flex-grow flex flex-col justify-between">
+            <div>
+              <!-- Category Pill -->
+              <span class="inline-block text-[11px] font-bold text-opc-purple bg-purple-50 px-2.5 py-0.5 rounded-md mb-2">
+                ${prop.category}
+              </span>
+
+              <!-- Property Title -->
+              <h3
+                onclick="navigateTo('details', '${prop.id}')"
+                class="font-bold text-slate-900 text-base leading-snug mb-1.5 hover:text-opc-blue cursor-pointer line-clamp-1"
+                title="${prop.title}"
+              >
+                ${prop.title}
+              </h3>
+
+              <!-- Community & Town -->
+              <p class="text-xs text-slate-500 flex items-center gap-1 mb-4">
+                <svg class="w-3.5 h-3.5 text-opc-purple shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                </svg>
+                <span class="truncate">${prop.community}, ${prop.town}</span>
+              </p>
+            </div>
+
+            <!-- Price & View Details Button -->
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+              <div>
+                <span class="block text-[11px] text-slate-400 font-medium">Annual Rent</span>
+                <span class="text-lg font-extrabold text-opc-blue">
+                  ${formatNGN(prop.annualRent)}
+                </span>
+                <span class="text-[11px] text-slate-400">/yr</span>
+              </div>
+
+              <button
+                type="button"
+                onclick="navigateTo('details', '${prop.id}')"
+                class="bg-opc-blue hover:bg-opc-blueDark text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors"
+              >
+                View Details
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderPropertyListings() {
+      const grid = document.getElementById("property-grid");
+      const emptyState = document.getElementById("empty-state");
+      const resetBtn = document.getElementById("reset-filters-btn");
+      const subtitle = document.getElementById("results-subtitle");
+
+      // Only Approved & Available properties may appear publicly
+      const filtered = properties.filter(prop => {
+        if (!isPubliclyVisible(prop)) return false;
+
+        const matchesCategory =
+          state.selectedCategory === "ALL" || prop.category === state.selectedCategory;
+
+        const matchesCommunity =
+          state.selectedCommunity === "ALL" ||
+          prop.community.toLowerCase() === state.selectedCommunity.toLowerCase();
+
+        const q = state.searchQuery;
+        const matchesQuery =
+          !q ||
+          prop.title.toLowerCase().includes(q) ||
+          prop.community.toLowerCase().includes(q) ||
+          prop.town.toLowerCase().includes(q) ||
+          prop.landmark.toLowerCase().includes(q) ||
+          prop.category.toLowerCase().includes(q);
+
+        return matchesCategory && matchesCommunity && matchesQuery;
+      });
+
+      const hasActiveFilter =
+        state.searchQuery !== "" ||
+        state.selectedCommunity !== "ALL" ||
+        state.selectedCategory !== "ALL";
+
+      resetBtn.classList.toggle("hidden", !hasActiveFilter);
+      subtitle.textContent = `Showing ${filtered.length} available ${filtered.length === 1 ? "property" : "properties"}`;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = "";
+        emptyState.classList.remove("hidden");
+      } else {
+        emptyState.classList.add("hidden");
+        grid.innerHTML = filtered.map(createPropertyCardHTML).join("");
+      }
+    }
+
+    // ==================== SAVE / BOOKMARK FUNCTIONALITY ====================
+    function toggleSaveProperty(id) {
+      const idx = state.savedIds.indexOf(id);
+      if (idx > -1) {
+        state.savedIds.splice(idx, 1);
+        showToast("Removed from saved properties.");
+      } else {
+        state.savedIds.push(id);
+        showToast("Property saved for later!", "success");
+      }
+      localStorage.setItem("opc_saved_ids", JSON.stringify(state.savedIds));
+      updateSavedBadge();
+
+      if (state.currentView === "home") renderPropertyListings();
+      if (state.currentView === "saved") renderSavedProperties();
+      if (state.currentView === "details" && state.activePropertyId === id) {
+        renderPropertyDetails(id);
+      }
+    }
+
+    function updateSavedBadge() {
+      const visibleSavedCount = properties.filter(
+        p => state.savedIds.includes(p.id) && isPubliclyVisible(p)
+      ).length;
+      document.getElementById("saved-count-badge").textContent = visibleSavedCount;
+    }
+
+    function renderSavedProperties() {
+      const grid = document.getElementById("saved-grid");
+      const empty = document.getElementById("saved-empty");
+      const savedProps = properties.filter(p => state.savedIds.includes(p.id) && isPubliclyVisible(p));
+
+      if (savedProps.length === 0) {
+        grid.innerHTML = "";
+        empty.classList.remove("hidden");
+      } else {
+        empty.classList.add("hidden");
+        grid.innerHTML = savedProps.map(createPropertyCardHTML).join("");
+      }
+    }
+
+    // ==================== PROPERTY DETAILS PAGE ====================
+    function renderPropertyDetails(id) {
+      const prop = properties.find(p => p.id === id);
+      const container = document.getElementById("property-details-content");
+
+      // Enforce public visibility rule on direct details view
+      if (!prop || !isPubliclyVisible(prop)) {
+        container.innerHTML = `
+          <div class="bg-white rounded-2xl border border-slate-200 p-8 sm:p-10 text-center shadow-sm">
+            <h1 class="text-xl font-bold text-slate-900 mb-2">Listing Not Publicly Available</h1>
+            <p class="text-sm text-slate-600 max-w-md mx-auto mb-5">
+              This accommodation is either awaiting administrator review or is no longer available for rent.
+            </p>
+            <button
+              type="button"
+              onclick="navigateTo('home')"
+              class="bg-opc-blue hover:bg-opc-blueDark text-white text-xs sm:text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+            >
+              Browse Available Accommodation
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const isSaved = state.savedIds.includes(prop.id);
+
+      // Build dynamic list of ONLY applicable additional charges (> 0)
+      const applicableCharges = [];
+      const agreementAmt = Number(prop.agreementFee || 0);
+      const agencyAmt = Number(prop.agencyFee || 0);
+      const cautionAmt = Number(prop.cautionFee || 0);
+      const otherAmt = Number(prop.otherChargesAmount || 0);
+
+      if (agreementAmt > 0) {
+        applicableCharges.push({ label: "Agreement Fee", amount: agreementAmt });
+      }
+      if (agencyAmt > 0) {
+        applicableCharges.push({ label: "Agency Fee", amount: agencyAmt });
+      }
+      if (cautionAmt > 0) {
+        applicableCharges.push({ label: "Caution / Refundable Deposit", amount: cautionAmt });
+      }
+      if (otherAmt > 0) {
+        const otherLabel = prop.otherChargesNote
+          ? `Other Charges (${prop.otherChargesNote})`
+          : "Other Charges";
+        applicableCharges.push({ label: otherLabel, amount: otherAmt });
+      }
+
+      const totalInitialPackage =
+        Number(prop.annualRent || 0) +
+        applicableCharges.reduce((sum, item) => sum + item.amount, 0);
+
+      const fallbackImg = "https://placehold.co/900x550/1E3A8A/FFFFFF?text=Ogoja+Property+Connect";
+      const mainImg = prop.images[0] || fallbackImg;
+
+      // Build WhatsApp message link
+      const whatsappMsg = encodeURIComponent(
+        `Hello ${prop.provider.name}, I found "${prop.title}" in ${prop.community}, ${prop.town} on Ogoja Property Connect (OPC) and would like to make enquiries.`
+      );
+      const cleanWhatsApp = (prop.provider.whatsapp || "").replace(/\D/g, "");
+      const whatsappHref = `https://wa.me/${cleanWhatsApp}?text=${whatsappMsg}`;
+      const telHref = `tel:${prop.provider.phone}`;
+
+      container.innerHTML = `
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+          <!-- Photo Gallery -->
+          <div class="p-4 sm:p-6 bg-slate-50 border-b border-slate-200">
+            <div class="rounded-2xl overflow-hidden bg-slate-200 h-64 sm:h-96 mb-3 relative">
+              <img
+                id="details-main-photo"
+                src="${mainImg}"
+                alt="${prop.title}"
+                onerror="this.src='${fallbackImg}'"
+                class="w-full h-full object-cover"
+              />
+              <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold shadow bg-emerald-600 text-white">
+                Available
+              </span>
+            </div>
+
+            <!-- Thumbnail Strip -->
+            ${
+              prop.images.length > 1
+                ? `<div class="flex gap-2.5 overflow-x-auto pb-1">
+                    ${prop.images
+                      .map(
+                        (img, idx) => `
+                        <button
+                          type="button"
+                          onclick="document.getElementById('details-main-photo').src='${img}'"
+                          class="w-20 h-16 rounded-xl overflow-hidden border-2 border-transparent hover:border-opc-purple focus:border-opc-purple shrink-0"
+                        >
+                          <img src="${img}" onerror="this.src='${fallbackImg}'" alt="Thumbnail ${idx + 1}" class="w-full h-full object-cover" />
+                        </button>
+                      `
+                      )
+                      .join("")}
+                  </div>`
+                : ""
+            }
+          </div>
+
+          <!-- Main Details Grid -->
+          <div class="p-5 sm:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left 2 Columns: Info, Charges, Description, Facilities -->
+            <div class="lg:col-span-2 space-y-6">
+              <div>
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <span class="text-xs font-bold text-opc-purple bg-purple-50 px-3 py-1 rounded-lg">
+                    ${prop.category}
+                  </span>
+                  <button
+                    type="button"
+                    onclick="toggleSaveProperty('${prop.id}')"
+                    class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border ${
+                      isSaved
+                        ? "border-rose-200 bg-rose-50 text-rose-700"
+                        : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                    }"
+                  >
+                    <svg class="w-4 h-4" fill="${isSaved ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    ${isSaved ? "Saved" : "Save Property"}
+                  </button>
+                </div>
+
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
+                  ${prop.title}
+                </h1>
+
+                <p class="text-sm text-slate-600 mt-2 flex items-start gap-1.5">
+                  <svg class="w-4 h-4 text-opc-purple mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                  </svg>
+                  <span>
+                    <strong>${prop.community}</strong>, ${prop.town}, ${prop.state} &bull; ${prop.landmark}
+                  </span>
+                </p>
+              </div>
+
+              <!-- Transparent Rent & Applicable Charges Breakdown -->
+              <div class="bg-slate-50 rounded-2xl border border-slate-200 p-5">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700 mb-3">
+                  Rent &amp; Payment Summary
+                </h2>
+                <div class="space-y-2.5 text-sm">
+                  <div class="flex justify-between py-1 border-b border-slate-200/70">
+                    <span class="text-slate-600">Annual Rent</span>
+                    <span class="font-bold text-opc-blue text-base">${formatNGN(prop.annualRent)}</span>
+                  </div>
+
+                  ${
+                    applicableCharges.length > 0
+                      ? applicableCharges
+                          .map(
+                            charge => `
+                            <div class="flex justify-between py-1 border-b border-slate-200/70 gap-3">
+                              <span class="text-slate-600">${charge.label}</span>
+                              <span class="font-semibold text-slate-800 shrink-0">${formatNGN(charge.amount)}</span>
+                            </div>
+                          `
+                          )
+                          .join("")
+                      : `<p class="text-xs text-slate-500 py-1">No additional agreement, agency, or caution fees apply.</p>`
+                  }
+
+                  <div class="pt-3 mt-2 border-t-2 border-slate-200 flex justify-between items-center">
+                    <span class="font-bold text-slate-900">Total Initial Payment</span>
+                    <span class="text-lg font-extrabold text-opc-purple">${formatNGN(totalInitialPackage)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Description -->
+              <div>
+                <h2 class="text-base font-bold text-slate-900 mb-2">Property Description</h2>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                  ${prop.description}
+                </p>
+              </div>
+
+              <!-- Facilities -->
+              <div>
+                <h2 class="text-base font-bold text-slate-900 mb-3">Available Facilities</h2>
+                <div class="flex flex-wrap gap-2">
+                  ${prop.facilities
+                    .map(
+                      f => `
+                      <span class="inline-flex items-center gap-1.5 bg-blue-50 text-opc-blue text-xs font-semibold px-3 py-1.5 rounded-xl">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        ${f}
+                      </span>
+                    `
+                    )
+                    .join("")}
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Direct Contact Card -->
+            <div class="lg:col-span-1">
+              <div class="bg-slate-50 rounded-2xl border border-slate-200 p-5 sticky top-24">
+                <span class="inline-block text-[11px] font-bold uppercase tracking-wider text-opc-purple bg-purple-100 px-2.5 py-0.5 rounded mb-2">
+                  Verified ${prop.provider.type}
+                </span>
+                <h3 class="text-lg font-bold text-slate-900">${prop.provider.name}</h3>
+                <p class="text-xs text-slate-500 mt-0.5 mb-4">
+                  Direct contact for inspection &amp; rental enquiries
+                </p>
+
+                ${
+                  prop.provider.isDemoContact
+                    ? `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-[11px] text-amber-900 mb-4">
+                        <strong>Demonstration Contact:</strong> Fictional number (${prop.provider.phone}) shown for prototype testing. Live listings added via the Advertise form will launch real WhatsApp &amp; phone calls.
+                      </div>`
+                    : ""
+                }
+
+                <div class="space-y-3">
+                  <!-- Contact on WhatsApp Button -->
+                  <a
+                    href="${whatsappHref}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onclick="${prop.provider.isDemoContact ? "event.preventDefault(); showToast('Demo listing: WhatsApp link would open for ' + '" + prop.provider.phone + "', 'warning');" : ""}"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm py-3.5 px-4 rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2"
+                  >
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824z"/>
+                    </svg>
+                    <span>Contact on WhatsApp</span>
+                  </a>
+
+                  <!-- Call Landlord or Agent Button -->
+                  <a
+                    href="${telHref}"
+                    onclick="${prop.provider.isDemoContact ? "event.preventDefault(); showToast('Demo listing: Phone dialer would call ' + '" + prop.provider.phone + "', 'warning');" : ""}"
+                    class="w-full bg-opc-blue hover:bg-opc-blueDark text-white font-bold text-sm py-3.5 px-4 rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    <span>Call ${prop.provider.type} (${prop.provider.phone})</span>
+                  </a>
+                </div>
+
+                <p class="text-[11px] text-slate-400 mt-4 text-center leading-relaxed">
+                  Safety Tip: Always inspect the accommodation in person before making any rent payment.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ==================== PROPERTY ADVERTISEMENT FORM ====================
+    function toggleOptionalCharge(chargeKey) {
+      const checkbox = document.getElementById(`chk-${chargeKey}`);
+      const wrapper = document.getElementById(`wrap-${chargeKey}`);
+      if (!checkbox || !wrapper) return;
+
+      if (checkbox.checked) {
+        wrapper.classList.remove("hidden");
+      } else {
+        wrapper.classList.add("hidden");
+        // Clear inputs when unchecked so deselected charges never contribute to total
+        if (chargeKey === "agreement") document.getElementById("ad-agreement").value = "";
+        if (chargeKey === "agency") document.getElementById("ad-agency").value = "";
+        if (chargeKey === "caution") document.getElementById("ad-caution").value = "";
+        if (chargeKey === "other") {
+          document.getElementById("ad-other-charges-amount").value = "";
+          document.getElementById("ad-other-charges-note").value = "";
+        }
+      }
+
+      updateAdTotalCalculation();
+    }
+
+    function updateAdTotalCalculation() {
+      const rent = Math.max(0, Number(document.getElementById("ad-rent").value || 0));
+
+      const agreementChecked = document.getElementById("chk-agreement").checked;
+      const agencyChecked = document.getElementById("chk-agency").checked;
+      const cautionChecked = document.getElementById("chk-caution").checked;
+      const otherChecked = document.getElementById("chk-other").checked;
+
+      const agreement = agreementChecked ? Math.max(0, Number(document.getElementById("ad-agreement").value || 0)) : 0;
+      const agency = agencyChecked ? Math.max(0, Number(document.getElementById("ad-agency").value || 0)) : 0;
+      const caution = cautionChecked ? Math.max(0, Number(document.getElementById("ad-caution").value || 0)) : 0;
+      const otherAmt = otherChecked ? Math.max(0, Number(document.getElementById("ad-other-charges-amount").value || 0)) : 0;
+
+      const total = rent + agreement + agency + caution + otherAmt;
+      document.getElementById("ad-total-display").textContent = formatNGN(total);
+
+      const activeLabels = ["Annual rent"];
+      if (agreementChecked && agreement > 0) activeLabels.push("agreement");
+      if (agencyChecked && agency > 0) activeLabels.push("agency");
+      if (cautionChecked && caution > 0) activeLabels.push("caution");
+      if (otherChecked && otherAmt > 0) activeLabels.push("other charges");
+
+      const hintEl = document.getElementById("ad-total-breakdown-hint");
+      if (hintEl) {
+        hintEl.textContent =
+          activeLabels.length === 1
+            ? "Annual rent only (no additional charges selected)"
+            : `Includes: ${activeLabels.join(" + ")}`;
+      }
+    }
+
+    // Track whether the file picker was opened so cancellation can show a helpful message
+    let photoPickerOpened = false;
+
+    function initPhotoUploadControl() {
+      const fileInput = document.getElementById("propertyPhotos");
+      if (!fileInput) return;
+
+      fileInput.addEventListener("click", () => {
+        photoPickerOpened = true;
+      });
+
+      fileInput.addEventListener("change", handlePhotoSelection);
+
+      window.addEventListener("focus", () => {
+        if (!photoPickerOpened) return;
+        setTimeout(() => {
+          if (photoPickerOpened && (!fileInput.files || fileInput.files.length === 0)) {
+            photoPickerOpened = false;
+            showPhotoFeedback("No new photographs were selected. Tap 'Upload Property Photos' whenever you're ready to choose images.");
+          }
+        }, 400);
+      });
+    }
+
+    function showPhotoFeedback(message) {
+      const feedbackEl = document.getElementById("ad-photo-feedback");
+      if (!feedbackEl) return;
+      if (!message) {
+        feedbackEl.classList.add("hidden");
+        feedbackEl.textContent = "";
+        return;
+      }
+      feedbackEl.textContent = message;
+      feedbackEl.classList.remove("hidden");
+    }
+
+    function handlePhotoSelection(event) {
+      photoPickerOpened = false;
+      const files = Array.from(event.target.files || []);
+      if (files.length === 0) {
+        showPhotoFeedback("No photographs selected. Tap 'Upload Property Photos' to choose images from your device.");
+        return;
+      }
+
+      let unsupportedCount = 0;
+      let addedCount = 0;
+
+      files.forEach(file => {
+        if (!file.type || !file.type.startsWith("image/")) {
+          unsupportedCount++;
+          return;
+        }
+        const objectUrl = URL.createObjectURL(file);
+        pendingAdPhotos.push({
+          name: file.name,
+          url: objectUrl
+        });
+        addedCount++;
+      });
+
+      if (unsupportedCount > 0) {
+        showPhotoFeedback(
+          `${unsupportedCount} unsupported file(s) skipped. Please select image files only (JPG, PNG, WEBP).`
+        );
+      } else if (addedCount > 0) {
+        showPhotoFeedback("");
+      }
+
+      renderAdPhotoPreviews();
+      event.target.value = "";
+    }
+
+    function removeAdPhoto(index) {
+      const removed = pendingAdPhotos.splice(index, 1)[0];
+      if (removed && removed.url) {
+        URL.revokeObjectURL(removed.url);
+      }
+      showPhotoFeedback("");
+      renderAdPhotoPreviews();
+    }
+
+    function renderAdPhotoPreviews() {
+      const grid = document.getElementById("ad-photo-preview-grid");
+      const countEl = document.getElementById("ad-photo-count");
+      const addMoreEl = document.getElementById("ad-add-more-photos");
+
+      const count = pendingAdPhotos.length;
+      if (countEl) {
+        countEl.textContent = `${count} ${count === 1 ? "photograph" : "photographs"} selected`;
+      }
+      if (addMoreEl) {
+        addMoreEl.classList.toggle("hidden", count === 0);
+      }
+
+      if (count === 0) {
+        grid.classList.add("hidden");
+        grid.classList.remove("grid");
+        grid.innerHTML = "";
+        return;
+      }
+
+      grid.classList.remove("hidden");
+      grid.classList.add("grid");
+      grid.innerHTML = pendingAdPhotos
+        .map(
+          (photo, idx) => `
+          <div class="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100 aspect-[4/3]">
+            <img src="${photo.url}" alt="Selected property photo ${idx + 1}" class="w-full h-full object-cover" />
+            <button
+              type="button"
+              onclick="removeAdPhoto(${idx})"
+              aria-label="Remove photo"
+              class="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-slate-900/80 text-white text-xs font-bold flex items-center justify-center hover:bg-rose-600"
+            >
+              &times;
+            </button>
+            <span class="absolute bottom-1 left-1.5 right-1.5 bg-slate-900/70 text-white text-[10px] px-1.5 py-0.5 rounded truncate">
+              ${photo.name}
+            </span>
+          </div>
+        `
+        )
+        .join("");
+    }
+
+    function handleAdvertiseSubmit(event) {
+      event.preventDefault();
+      const errorBox = document.getElementById("ad-error-msg");
+      errorBox.classList.add("hidden");
+
+      const providerName = document.getElementById("ad-provider-name").value.trim();
+      const providerType = document.getElementById("ad-provider-type").value;
+      const phone = document.getElementById("ad-phone").value.trim();
+      const whatsapp = document.getElementById("ad-whatsapp").value.trim();
+      const town = document.getElementById("ad-town").value.trim();
+      const community = document.getElementById("ad-community").value.trim();
+      const landmark = document.getElementById("ad-landmark").value.trim();
+      const title = document.getElementById("ad-title").value.trim();
+      const category = document.getElementById("ad-category").value;
+      const annualRent = Number(document.getElementById("ad-rent").value);
+
+      const agreementChecked = document.getElementById("chk-agreement").checked;
+      const agencyChecked = document.getElementById("chk-agency").checked;
+      const cautionChecked = document.getElementById("chk-caution").checked;
+      const otherChecked = document.getElementById("chk-other").checked;
+
+      const agreementFee = agreementChecked ? Number(document.getElementById("ad-agreement").value || 0) : 0;
+      const agencyFee = agencyChecked ? Number(document.getElementById("ad-agency").value || 0) : 0;
+      const cautionFee = cautionChecked ? Number(document.getElementById("ad-caution").value || 0) : 0;
+      const otherChargesAmount = otherChecked ? Number(document.getElementById("ad-other-charges-amount").value || 0) : 0;
+      const otherChargesNote = otherChecked ? document.getElementById("ad-other-charges-note").value.trim() : "";
+
+      const description = document.getElementById("ad-description").value.trim();
+      const consent = document.getElementById("ad-consent").checked;
+
+      // Validation
+      if (!providerName) return showAdFormError("Please enter your full name.");
+      if (!providerType) return showAdFormError("Please select whether you are a Landlord or an Agent.");
+      if (!phone || phone.replace(/\D/g, "").length < 10) return showAdFormError("Please enter a valid phone number.");
+      if (!whatsapp || whatsapp.replace(/\D/g, "").length < 10) return showAdFormError("Please enter a valid WhatsApp number.");
+      if (!title) return showAdFormError("Please enter a clear property title.");
+      if (!category) return showAdFormError("Please choose an accommodation category.");
+      if (!town) return showAdFormError("Please enter the town (e.g. Ogoja).");
+      if (!community) return showAdFormError("Please enter the community (e.g. Igoli).");
+      if (!landmark) return showAdFormError("Please provide the street or a nearby landmark.");
+      if (!description) return showAdFormError("Please write a short description of the property.");
+      if (!annualRent || annualRent <= 0) return showAdFormError("Please enter a valid annual rent amount in Naira.");
+
+      if (agreementChecked && agreementFee <= 0) return showAdFormError("Please enter the Agreement fee amount or uncheck the box.");
+      if (agencyChecked && agencyFee <= 0) return showAdFormError("Please enter the Agency fee amount or uncheck the box.");
+      if (cautionChecked && cautionFee <= 0) return showAdFormError("Please enter the Caution fee amount or uncheck the box.");
+      if (otherChecked && otherChargesAmount <= 0) return showAdFormError("Please enter the Other charges amount or uncheck the box.");
+      if (otherChecked && !otherChargesNote) return showAdFormError("Please enter a short description for Other charges.");
+
+      if (!consent) return showAdFormError("Please tick the authorization and accuracy confirmation box before submitting.");
+
+      // Format WhatsApp number for wa.me link
+      let formattedWA = whatsapp.replace(/\D/g, "");
+      if (formattedWA.startsWith("0") && formattedWA.length === 11) {
+        formattedWA = "234" + formattedWA.slice(1);
+      }
+
+      const referenceId = "OPC-" + Date.now().toString().slice(-5);
+      const fallbackPreview = "https://placehold.co/900x550/1E3A8A/FFFFFF?text=Pending+Review+Listing";
+
+      const newProperty = {
+        id: referenceId,
+        title,
+        category,
+        state: "Cross River State",
+        town,
+        community,
+        landmark,
+        annualRent,
+        agreementFee,
+        agencyFee,
+        cautionFee,
+        otherChargesAmount,
+        otherChargesNote,
+        description,
+        facilities: ["Submitted via OPC Form"],
+        status: "Pending Review",
+        submittedAt: new Date().toISOString(),
+        provider: {
+          name: providerName,
+          type: providerType,
+          phone,
+          whatsapp: formattedWA,
+          isDemoContact: false
+        },
+        images: pendingAdPhotos.length > 0 ? pendingAdPhotos.map(p => p.url) : [fallbackPreview]
+      };
+
+      // Save in prototype memory and localStorage (marked Pending Review, never published automatically)
+      properties.unshift(newProperty);
+      try {
+        const stored = JSON.parse(localStorage.getItem("opc_prototype_submissions") || "[]");
+        stored.unshift({
+          ...newProperty,
+          images: [fallbackPreview]
+        });
+        localStorage.setItem("opc_prototype_submissions", JSON.stringify(stored));
+      } catch (e) {
+        // Continue cleanly if localStorage quota is unavailable
+      }
+
+      // Show confirmation message with Reference ID
+      document.getElementById("ad-ref-id").textContent = referenceId;
+      document.getElementById("advertise-form").classList.add("hidden");
+      document.getElementById("ad-success-box").classList.remove("hidden");
+      showToast(`Submission ${referenceId} saved as Pending Review.`, "success");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showAdFormError(message) {
+      const errorBox = document.getElementById("ad-error-msg");
+      errorBox.textContent = message;
+      errorBox.classList.remove("hidden");
+      errorBox.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function resetAdForm() {
+      document.getElementById("advertise-form").reset();
+      document.getElementById("ad-town").value = "Ogoja";
+
+      // Collapse optional charge wrappers
+      ["agreement", "agency", "caution", "other"].forEach(key => {
+        const wrap = document.getElementById(`wrap-${key}`);
+        if (wrap) wrap.classList.add("hidden");
+      });
+
+      pendingAdPhotos.forEach(p => {
+        if (p.url) URL.revokeObjectURL(p.url);
+      });
+      pendingAdPhotos = [];
+      showPhotoFeedback("");
+      renderAdPhotoPreviews();
+      updateAdTotalCalculation();
+      document.getElementById("ad-error-msg").classList.add("hidden");
+      document.getElementById("ad-success-box").classList.add("hidden");
+      document.getElementById("advertise-form").classList.remove("hidden");
+    }
+
+    // ==================== ADMINISTRATOR REVIEW INTERFACE ====================
+    function renderAdminPanel() {
+      const pendingList = document.getElementById("admin-pending-list");
+      const activeList = document.getElementById("admin-active-list");
+      const rejectedList = document.getElementById("admin-rejected-list");
+
+      const pendingCount = document.getElementById("admin-pending-count");
+      const approvedCount = document.getElementById("admin-approved-count");
+      const rejectedCount = document.getElementById("admin-rejected-count");
+
+      const pendingProps = properties.filter(p => p.status === "Pending Review");
+      const activeProps = properties.filter(p => p.status === "Approved" || p.status === "Unavailable");
+      const rejectedProps = properties.filter(p => p.status === "Rejected");
+
+      pendingCount.textContent = pendingProps.length;
+      approvedCount.textContent = activeProps.length;
+      rejectedCount.textContent = rejectedProps.length;
+
+      // 1. Pending Review
+      if (pendingProps.length === 0) {
+        pendingList.innerHTML = `
+          <div class="bg-white rounded-xl border border-slate-200 p-6 text-center text-sm text-slate-500">
+            No pending property submissions right now. Try submitting one via "Advertise Property".
+          </div>
+        `;
+      } else {
+        pendingList.innerHTML = pendingProps
+          .map(
+            p => `
+            <div class="bg-white rounded-2xl border border-amber-200 p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <div class="flex flex-wrap items-center gap-2 mb-1">
+                  <span class="bg-amber-100 text-amber-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+                    Pending Review
+                  </span>
+                  <span class="text-xs font-semibold text-opc-purple">${p.category}</span>
+                  <span class="text-xs text-slate-400">&bull; Ref: ${p.id}</span>
+                </div>
+                <h3 class="font-bold text-slate-900 text-base">${p.title}</h3>
+                <p class="text-xs text-slate-600 mt-0.5">
+                  Location: <strong>${p.community}, ${p.town}</strong> (${p.landmark}) &bull; Annual Rent: <strong>${formatNGN(p.annualRent)}/yr</strong>
+                </p>
+                <p class="text-xs text-slate-500 mt-1">
+                  Submitted by: <strong>${p.provider.name}</strong> (${p.provider.type}) &bull; Phone: ${p.provider.phone}
+                </p>
+              </div>
+
+              <div class="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onclick="adminUpdateStatus('${p.id}', 'Approved')"
+                  class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
+                >
+                  Approve
+                </button>
+                <button
+                  type="button"
+                  onclick="adminUpdateStatus('${p.id}', 'Rejected')"
+                  class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
+                >
+                  Reject
+                </button>
+              </div>
+            </div>
+          `
+          )
+          .join("");
+      }
+
+      // 2. Approved & Unavailable
+      if (activeProps.length === 0) {
+        activeList.innerHTML = `
+          <div class="bg-white rounded-xl border border-slate-200 p-5 text-center text-xs text-slate-500">
+            No approved or unavailable properties found.
+          </div>
+        `;
+      } else {
+        activeList.innerHTML = activeProps
+          .map(
+            p => `
+            <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                    p.status === "Approved"
+                      ? "bg-emerald-100 text-emerald-800"
+                      : "bg-slate-200 text-slate-700"
+                  }">
+                    ${p.status === "Approved" ? "Approved (Public)" : "Unavailable (Hidden)"}
+                  </span>
+                  <span class="text-xs text-slate-400">Ref: ${p.id} &bull; ${p.community}</span>
+                </div>
+                <h4 class="font-bold text-slate-900 text-sm mt-1">${p.title}</h4>
+              </div>
+
+              <div class="flex items-center gap-2 shrink-0">
+                ${
+                  p.status === "Approved"
+                    ? `<button
+                        type="button"
+                        onclick="adminUpdateStatus('${p.id}', 'Unavailable')"
+                        class="border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl transition-colors"
+                      >
+                        Mark Unavailable
+                      </button>`
+                    : `<button
+                        type="button"
+                        onclick="adminUpdateStatus('${p.id}', 'Approved')"
+                        class="bg-opc-blue hover:bg-opc-blueDark text-white text-xs font-semibold px-3 py-2 rounded-xl transition-colors"
+                      >
+                        Mark Approved / Available
+                      </button>`
+                }
+              </div>
+            </div>
+          `
+          )
+          .join("");
+      }
+
+      // 3. Rejected
+      if (rejectedProps.length === 0) {
+        rejectedList.innerHTML = `
+          <div class="bg-white rounded-xl border border-slate-200 p-5 text-center text-xs text-slate-500">
+            No rejected submissions.
+          </div>
+        `;
+      } else {
+        rejectedList.innerHTML = rejectedProps
+          .map(
+            p => `
+            <div class="bg-white rounded-xl border border-rose-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800">
+                    Rejected (Hidden)
+                  </span>
+                  <span class="text-xs text-slate-400">Ref: ${p.id} &bull; ${p.community}</span>
+                </div>
+                <h4 class="font-bold text-slate-900 text-sm mt-1">${p.title}</h4>
+                <p class="text-xs text-slate-500 mt-0.5">Submitted by: ${p.provider.name} (${p.provider.phone})</p>
+              </div>
+            </div>
+          `
+          )
+          .join("");
+      }
+    }
+
+    function adminUpdateStatus(id, newStatus) {
+      const prop = properties.find(p => p.id === id);
+      if (!prop) return;
+      prop.status = newStatus;
+
+      // Sync status change to localStorage if this was a user-submitted prototype listing
+      try {
+        const stored = JSON.parse(localStorage.getItem("opc_prototype_submissions") || "[]");
+        const idx = stored.findIndex(item => item.id === id);
+        if (idx > -1) {
+          stored[idx].status = newStatus;
+          localStorage.setItem("opc_prototype_submissions", JSON.stringify(stored));
+        }
+      } catch (e) {
+        // Ignore storage errors
+      }
+
+      updateSavedBadge();
+      showToast(
+        `Listing "${prop.title}" updated to ${newStatus}.`,
+        newStatus === "Approved" ? "success" : "warning"
+      );
+      renderAdminPanel();
+    }
+  </script>
+</body>
+</html>
 
