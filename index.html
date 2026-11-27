@@ -671,7 +671,7 @@
           <div class="pt-4 border-t border-slate-100">
             <h2 class="text-base font-bold text-opc-blue mb-1">4. Property Photographs</h2>
             <p class="text-xs text-slate-500 mb-3">
-              Select clear photos from your phone gallery. In this prototype, photos are previewed temporarily in your browser and are not uploaded to a server yet.
+              Select clear property photos from your phone gallery. Each image must be JPG, PNG or WEBP and no larger than 5 MB.
             </p>
 
             <!-- Accessible native file input (not display:none so Android WebViews/browsers open the picker reliably) -->
@@ -1265,13 +1265,25 @@
 
       applicationForm.classList.add("hidden");
       statusBox.classList.remove("hidden");
+      const propertyForm = document.getElementById("advertise-form");
       if (application.status === "approved") {
-        statusBox.className = "rounded-xl border border-emerald-200 bg-emerald-50 p-4";
-        statusBox.innerHTML = `<h3 class="font-bold text-emerald-900">Advertiser account approved</h3><p class="text-sm text-emerald-800 mt-1">Welcome, ${escapeHtml(application.full_name)}. Your advertiser registration has been approved. Property listing submission will be connected in the next implementation step.</p>`;
+        statusBox.className = "rounded-xl border border-emerald-200 bg-emerald-50 p-4 mb-5";
+        statusBox.innerHTML = `<h3 class="font-bold text-emerald-900">Advertiser account approved</h3><p class="text-sm text-emerald-800 mt-1">Welcome, ${escapeHtml(application.full_name)}. You can now submit properties for administrator review. Submitted properties will not appear publicly until approved.</p>`;
+        document.getElementById("ad-provider-name").value = application.full_name || "";
+        document.getElementById("ad-provider-type").value = application.account_type === "agent" ? "Agent" : "Landlord";
+        const { data: profile } = await opcSupabase.from("opc_advertisers").select("phone_number, whatsapp_number, community").eq("user_id", user.id).maybeSingle();
+        if (profile) {
+          document.getElementById("ad-phone").value = profile.phone_number || "";
+          document.getElementById("ad-whatsapp").value = profile.whatsapp_number || profile.phone_number || "";
+          document.getElementById("ad-community").value = profile.community || "";
+        }
+        propertyForm.classList.remove("hidden");
       } else if (application.status === "rejected" || application.status === "suspended") {
+        propertyForm.classList.add("hidden");
         statusBox.className = "rounded-xl border border-rose-200 bg-rose-50 p-4";
-        statusBox.innerHTML = `<h3 class="font-bold text-rose-900">Application ${application.status}</h3><p class="text-sm text-rose-800 mt-1">Please contact the Ogoja Property Connect team for clarification or next steps.</p>`;
+        statusBox.innerHTML = `<h3 class="font-bold text-rose-900">Application ${escapeHtml(application.status)}</h3><p class="text-sm text-rose-800 mt-1">Please contact the Ogoja Property Connect team for clarification or next steps.</p>`;
       } else {
+        propertyForm.classList.add("hidden");
         statusBox.className = "rounded-xl border border-amber-200 bg-amber-50 p-4";
         statusBox.innerHTML = `<h3 class="font-bold text-amber-900">Application pending review</h3><p class="text-sm text-amber-800 mt-1">Thank you, ${escapeHtml(application.full_name)}. Your application is awaiting administrator review. You will be able to submit property listings after approval.</p>`;
       }
@@ -1929,28 +1941,33 @@
       }
 
       let unsupportedCount = 0;
+      let oversizedCount = 0;
       let addedCount = 0;
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
 
       files.forEach(file => {
-        if (!file.type || !file.type.startsWith("image/")) {
+        if (!allowedTypes.includes(file.type)) {
           unsupportedCount++;
           return;
         }
+        if (file.size > 5 * 1024 * 1024) {
+          oversizedCount++;
+          return;
+        }
+        if (pendingAdPhotos.length >= 10) {
+          showPhotoFeedback("A maximum of 10 photographs is allowed per property.");
+          return;
+        }
         const objectUrl = URL.createObjectURL(file);
-        pendingAdPhotos.push({
-          name: file.name,
-          url: objectUrl
-        });
+        pendingAdPhotos.push({ name: file.name, url: objectUrl, file });
         addedCount++;
       });
 
-      if (unsupportedCount > 0) {
-        showPhotoFeedback(
-          `${unsupportedCount} unsupported file(s) skipped. Please select image files only (JPG, PNG, WEBP).`
-        );
-      } else if (addedCount > 0) {
-        showPhotoFeedback("");
-      }
+      const messages = [];
+      if (unsupportedCount) messages.push(`${unsupportedCount} unsupported file(s) skipped. Use JPG, PNG or WEBP.`);
+      if (oversizedCount) messages.push(`${oversizedCount} file(s) exceeded the 5 MB limit and were skipped.`);
+      if (pendingAdPhotos.length >= 10) messages.push("A maximum of 10 photographs is allowed per property.");
+      showPhotoFeedback(messages.join(" "));
 
       renderAdPhotoPreviews();
       event.target.value = "";
@@ -2009,113 +2026,123 @@
         .join("");
     }
 
-    function handleAdvertiseSubmit(event) {
+    async function handleAdvertiseSubmit(event) {
       event.preventDefault();
       const errorBox = document.getElementById("ad-error-msg");
       errorBox.classList.add("hidden");
+      const submitButton = document.querySelector('#advertise-form button[type="submit"]');
+      const originalButtonText = submitButton ? submitButton.textContent : "Submit Property";
+      if (submitButton) { submitButton.disabled = true; submitButton.textContent = "Submitting property..."; }
 
-      const providerName = document.getElementById("ad-provider-name").value.trim();
-      const providerType = document.getElementById("ad-provider-type").value;
-      const phone = document.getElementById("ad-phone").value.trim();
-      const whatsapp = document.getElementById("ad-whatsapp").value.trim();
-      const town = document.getElementById("ad-town").value.trim();
-      const community = document.getElementById("ad-community").value.trim();
-      const landmark = document.getElementById("ad-landmark").value.trim();
-      const title = document.getElementById("ad-title").value.trim();
-      const category = document.getElementById("ad-category").value;
-      const annualRent = Number(document.getElementById("ad-rent").value);
-
-      const agreementChecked = document.getElementById("chk-agreement").checked;
-      const agencyChecked = document.getElementById("chk-agency").checked;
-      const cautionChecked = document.getElementById("chk-caution").checked;
-      const otherChecked = document.getElementById("chk-other").checked;
-
-      const agreementFee = agreementChecked ? Number(document.getElementById("ad-agreement").value || 0) : 0;
-      const agencyFee = agencyChecked ? Number(document.getElementById("ad-agency").value || 0) : 0;
-      const cautionFee = cautionChecked ? Number(document.getElementById("ad-caution").value || 0) : 0;
-      const otherChargesAmount = otherChecked ? Number(document.getElementById("ad-other-charges-amount").value || 0) : 0;
-      const otherChargesNote = otherChecked ? document.getElementById("ad-other-charges-note").value.trim() : "";
-
-      const description = document.getElementById("ad-description").value.trim();
-      const consent = document.getElementById("ad-consent").checked;
-
-      // Validation
-      if (!providerName) return showAdFormError("Please enter your full name.");
-      if (!providerType) return showAdFormError("Please select whether you are a Landlord or an Agent.");
-      if (!phone || phone.replace(/\D/g, "").length < 10) return showAdFormError("Please enter a valid phone number.");
-      if (!whatsapp || whatsapp.replace(/\D/g, "").length < 10) return showAdFormError("Please enter a valid WhatsApp number.");
-      if (!title) return showAdFormError("Please enter a clear property title.");
-      if (!category) return showAdFormError("Please choose an accommodation category.");
-      if (!town) return showAdFormError("Please enter the town (e.g. Ogoja).");
-      if (!community) return showAdFormError("Please enter the community (e.g. Igoli).");
-      if (!landmark) return showAdFormError("Please provide the street or a nearby landmark.");
-      if (!description) return showAdFormError("Please write a short description of the property.");
-      if (!annualRent || annualRent <= 0) return showAdFormError("Please enter a valid annual rent amount in Naira.");
-
-      if (agreementChecked && agreementFee <= 0) return showAdFormError("Please enter the Agreement fee amount or uncheck the box.");
-      if (agencyChecked && agencyFee <= 0) return showAdFormError("Please enter the Agency fee amount or uncheck the box.");
-      if (cautionChecked && cautionFee <= 0) return showAdFormError("Please enter the Caution fee amount or uncheck the box.");
-      if (otherChecked && otherChargesAmount <= 0) return showAdFormError("Please enter the Other charges amount or uncheck the box.");
-      if (otherChecked && !otherChargesNote) return showAdFormError("Please enter a short description for Other charges.");
-
-      if (!consent) return showAdFormError("Please tick the authorization and accuracy confirmation box before submitting.");
-
-      // Format WhatsApp number for wa.me link
-      let formattedWA = whatsapp.replace(/\D/g, "");
-      if (formattedWA.startsWith("0") && formattedWA.length === 11) {
-        formattedWA = "234" + formattedWA.slice(1);
-      }
-
-      const referenceId = "OPC-" + Date.now().toString().slice(-5);
-      const fallbackPreview = "https://placehold.co/900x550/1E3A8A/FFFFFF?text=Pending+Review+Listing";
-
-      const newProperty = {
-        id: referenceId,
-        title,
-        category,
-        state: "Cross River State",
-        town,
-        community,
-        landmark,
-        annualRent,
-        agreementFee,
-        agencyFee,
-        cautionFee,
-        otherChargesAmount,
-        otherChargesNote,
-        description,
-        facilities: ["Submitted via OPC Form"],
-        status: "Pending Review",
-        submittedAt: new Date().toISOString(),
-        provider: {
-          name: providerName,
-          type: providerType,
-          phone,
-          whatsapp: formattedWA,
-          isDemoContact: false
-        },
-        images: pendingAdPhotos.length > 0 ? pendingAdPhotos.map(p => p.url) : [fallbackPreview]
-      };
-
-      // Save in prototype memory and localStorage (marked Pending Review, never published automatically)
-      properties.unshift(newProperty);
       try {
-        const stored = JSON.parse(localStorage.getItem("opc_prototype_submissions") || "[]");
-        stored.unshift({
-          ...newProperty,
-          images: [fallbackPreview]
-        });
-        localStorage.setItem("opc_prototype_submissions", JSON.stringify(stored));
-      } catch (e) {
-        // Continue cleanly if localStorage quota is unavailable
-      }
+        const { data: userData, error: userError } = await opcSupabase.auth.getUser();
+        if (userError || !userData.user) throw new Error("Please sign in to your approved advertiser account before submitting a property.");
+        const user = userData.user;
+        const { data: advertiser, error: advertiserError } = await opcSupabase
+          .from("opc_advertisers").select("full_name, account_type, phone_number, whatsapp_number, status")
+          .eq("user_id", user.id).maybeSingle();
+        if (advertiserError) throw advertiserError;
+        if (!advertiser || advertiser.status !== "approved") throw new Error("Only approved advertisers can submit property listings.");
 
-      // Show confirmation message with Reference ID
-      document.getElementById("ad-ref-id").textContent = referenceId;
-      document.getElementById("advertise-form").classList.add("hidden");
-      document.getElementById("ad-success-box").classList.remove("hidden");
-      showToast(`Submission ${referenceId} saved as Pending Review.`, "success");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+        const providerName = document.getElementById("ad-provider-name").value.trim();
+        const providerType = document.getElementById("ad-provider-type").value;
+        const phone = document.getElementById("ad-phone").value.trim();
+        const whatsapp = document.getElementById("ad-whatsapp").value.trim();
+        const town = document.getElementById("ad-town").value.trim();
+        const community = document.getElementById("ad-community").value.trim();
+        const landmark = document.getElementById("ad-landmark").value.trim();
+        const title = document.getElementById("ad-title").value.trim();
+        const category = document.getElementById("ad-category").value;
+        const annualRent = Number(document.getElementById("ad-rent").value);
+        const agreementChecked = document.getElementById("chk-agreement").checked;
+        const agencyChecked = document.getElementById("chk-agency").checked;
+        const cautionChecked = document.getElementById("chk-caution").checked;
+        const otherChecked = document.getElementById("chk-other").checked;
+        const agreementFee = agreementChecked ? Number(document.getElementById("ad-agreement").value || 0) : 0;
+        const agencyFee = agencyChecked ? Number(document.getElementById("ad-agency").value || 0) : 0;
+        const cautionFee = cautionChecked ? Number(document.getElementById("ad-caution").value || 0) : 0;
+        const otherChargesAmount = otherChecked ? Number(document.getElementById("ad-other-charges-amount").value || 0) : 0;
+        const otherChargesNote = otherChecked ? document.getElementById("ad-other-charges-note").value.trim() : "";
+        const description = document.getElementById("ad-description").value.trim();
+        const consent = document.getElementById("ad-consent").checked;
+
+        if (!providerName) throw new Error("Please enter your full name.");
+        if (!providerType) throw new Error("Please select whether you are a Landlord or an Agent.");
+        if (!phone || phone.replace(/\D/g, "").length < 10) throw new Error("Please enter a valid phone number.");
+        if (!whatsapp || whatsapp.replace(/\D/g, "").length < 10) throw new Error("Please enter a valid WhatsApp number.");
+        if (!title || !category || !town || !community || !landmark || !description) throw new Error("Please complete all required property details.");
+        if (!annualRent || annualRent <= 0) throw new Error("Please enter a valid annual rent amount in Naira.");
+        if (agreementChecked && agreementFee <= 0) throw new Error("Please enter the Agreement fee amount or uncheck the box.");
+        if (agencyChecked && agencyFee <= 0) throw new Error("Please enter the Agency fee amount or uncheck the box.");
+        if (cautionChecked && cautionFee <= 0) throw new Error("Please enter the Caution fee amount or uncheck the box.");
+        if (otherChecked && otherChargesAmount <= 0) throw new Error("Please enter the Other charges amount or uncheck the box.");
+        if (otherChecked && !otherChargesNote) throw new Error("Please enter a short description for Other charges.");
+        if (!consent) throw new Error("Please tick the authorization and accuracy confirmation box before submitting.");
+        if (pendingAdPhotos.length > 10) throw new Error("You can upload a maximum of 10 photographs.");
+
+        let formattedWA = whatsapp.replace(/\D/g, "");
+        if (formattedWA.startsWith("0") && formattedWA.length === 11) formattedWA = "234" + formattedWA.slice(1);
+        const referenceId = "OPC-" + Date.now().toString().slice(-8);
+        const uploadedImagePaths = [];
+
+        for (let i = 0; i < pendingAdPhotos.length; i++) {
+          const photo = pendingAdPhotos[i];
+          if (!photo.file) throw new Error("One selected photo is no longer available. Please select it again.");
+          if (photo.file.size > 5 * 1024 * 1024) throw new Error(`${photo.name} is larger than the 5 MB upload limit.`);
+          const extension = photo.file.type === "image/jpeg" ? "jpg" : photo.file.type === "image/png" ? "png" : "webp";
+          const objectPath = `${user.id}/${referenceId}/${i + 1}-${crypto.randomUUID()}.${extension}`;
+          const { error: uploadError } = await opcSupabase.storage.from("pending-property-images").upload(objectPath, photo.file, {
+            cacheControl: "3600", upsert: false, contentType: photo.file.type
+          });
+          if (uploadError) throw new Error(`Photo upload failed for ${photo.name}: ${uploadError.message}`);
+          uploadedImagePaths.push(objectPath);
+        }
+
+        const payload = {
+          title,
+          accommodation_type: category,
+          state: "Cross River State",
+          town,
+          community,
+          street_address: landmark,
+          landmark,
+          annual_rent: annualRent,
+          agreement_fee_applies: agreementChecked,
+          agreement_fee_amount: agreementFee,
+          agency_fee_applies: agencyChecked,
+          agency_fee_amount: agencyFee,
+          caution_fee_applies: cautionChecked,
+          caution_fee_amount: cautionFee,
+          other_fee_applies: otherChecked,
+          other_fee_description: otherChargesNote || null,
+          other_fee_amount: otherChargesAmount,
+          description,
+          facilities: [],
+          provider_type: providerType.toLowerCase(),
+          provider_name: providerName,
+          phone_number: phone,
+          whatsapp_number: formattedWA,
+          status: "pending_review",
+          availability: "available",
+          advertiser_user_id: user.id,
+          images: uploadedImagePaths
+        };
+        const { data: inserted, error: insertError } = await opcSupabase.from("properties").insert(payload).select("id").single();
+        if (insertError) throw insertError;
+
+        document.getElementById("ad-ref-id").textContent = inserted.id;
+        document.getElementById("advertise-form").classList.add("hidden");
+        document.getElementById("ad-success-box").classList.remove("hidden");
+        showToast("Your property has been submitted for administrator review.", "success");
+        pendingAdPhotos.forEach(photo => { if (photo.url) URL.revokeObjectURL(photo.url); });
+        pendingAdPhotos = [];
+        renderAdPhotoPreviews();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (error) {
+        showAdFormError(error.message || "We could not submit your property. Please try again.");
+      } finally {
+        if (submitButton) { submitButton.disabled = false; submitButton.textContent = originalButtonText; }
+      }
     }
 
     function showAdFormError(message) {
