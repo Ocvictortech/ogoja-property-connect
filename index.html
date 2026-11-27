@@ -370,7 +370,84 @@
           </div>
         </div>
 
-        <form id="advertise-form" onsubmit="handleAdvertiseSubmit(event)" novalidate class="space-y-6">
+        <!-- Advertiser account and approval portal -->
+        <section id="advertiser-auth-panel" class="space-y-5 mb-6">
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <h2 class="font-bold text-blue-900">Advertiser access</h2>
+            <p class="text-xs sm:text-sm text-blue-800 mt-1">Create an account or sign in. All landlord and agent accounts must be approved by an OPC administrator before property listings can be submitted.</p>
+          </div>
+
+          <div id="auth-message" class="hidden rounded-xl border p-3 text-sm" role="status" aria-live="polite"></div>
+
+          <div id="advertiser-auth-forms" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <form id="advertiser-signup-form" onsubmit="handleAdvertiserSignUp(event)" class="border border-slate-200 rounded-xl p-4 space-y-3">
+              <h3 class="font-bold text-slate-900">Create an account</h3>
+              <div>
+                <label for="auth-signup-email" class="block text-xs font-semibold text-slate-700 mb-1">Email address</label>
+                <input id="auth-signup-email" type="email" autocomplete="email" required class="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" placeholder="you@example.com" />
+              </div>
+              <div>
+                <label for="auth-signup-password" class="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+                <input id="auth-signup-password" type="password" autocomplete="new-password" minlength="8" required class="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" placeholder="At least 8 characters" />
+              </div>
+              <button id="auth-signup-button" type="submit" class="w-full bg-opc-purple text-white font-semibold text-sm rounded-xl px-4 py-3 hover:opacity-90">Create account</button>
+              <p class="text-xs text-slate-500">You will receive an email to confirm your address.</p>
+            </form>
+
+            <form id="advertiser-login-form" onsubmit="handleAdvertiserLogin(event)" class="border border-slate-200 rounded-xl p-4 space-y-3">
+              <h3 class="font-bold text-slate-900">Already registered?</h3>
+              <div>
+                <label for="auth-login-email" class="block text-xs font-semibold text-slate-700 mb-1">Email address</label>
+                <input id="auth-login-email" type="email" autocomplete="email" required class="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" placeholder="you@example.com" />
+              </div>
+              <div>
+                <label for="auth-login-password" class="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+                <input id="auth-login-password" type="password" autocomplete="current-password" required class="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" placeholder="Your password" />
+              </div>
+              <button id="auth-login-button" type="submit" class="w-full bg-opc-blue text-white font-semibold text-sm rounded-xl px-4 py-3 hover:opacity-90">Sign in</button>
+            </form>
+          </div>
+
+          <form id="advertiser-application-form" onsubmit="handleAdvertiserApplication(event)" class="hidden border border-slate-200 rounded-xl p-4 sm:p-5 space-y-3">
+            <h3 class="font-bold text-slate-900">Advertiser registration application</h3>
+            <p class="text-xs text-slate-500">Complete these details so the OPC team can review your application.</p>
+            <div>
+              <label for="app-full-name" class="block text-xs font-semibold text-slate-700 mb-1">Full name *</label>
+              <input id="app-full-name" required class="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" placeholder="Your full name" />
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="app-account-type" class="block text-xs font-semibold text-slate-700 mb-1">I am a *</label>
+                <select id="app-account-type" required class="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm"><option value="">Select one</option><option value="landlord">Landlord</option><option value="agent">Property agent</option></select>
+              </div>
+              <div>
+                <label for="app-phone" class="block text-xs font-semibold text-slate-700 mb-1">Phone number *</label>
+                <input id="app-phone" type="tel" required class="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" placeholder="0803 000 0000" />
+              </div>
+              <div>
+                <label for="app-whatsapp" class="block text-xs font-semibold text-slate-700 mb-1">WhatsApp number</label>
+                <input id="app-whatsapp" type="tel" class="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" placeholder="If different from phone" />
+              </div>
+              <div>
+                <label for="app-community" class="block text-xs font-semibold text-slate-700 mb-1">Community in Ogoja *</label>
+                <input id="app-community" required class="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" placeholder="e.g. Igoli" />
+              </div>
+            </div>
+            <div>
+              <label for="app-verification-details" class="block text-xs font-semibold text-slate-700 mb-1">How can we verify your authority to advertise? *</label>
+              <textarea id="app-verification-details" required rows="3" class="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" placeholder="For example, state whether you own properties or represent a landlord, and how we can verify this."></textarea>
+            </div>
+            <button id="app-submit-button" type="submit" class="w-full bg-opc-purple text-white font-semibold text-sm rounded-xl px-4 py-3 hover:opacity-90">Submit for administrator approval</button>
+          </form>
+
+          <div id="advertiser-application-status" class="hidden rounded-xl border p-4" aria-live="polite"></div>
+          <div id="advertiser-account-actions" class="hidden flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+            <span id="advertiser-signed-in-email" class="text-xs text-slate-500"></span>
+            <button type="button" onclick="handleAdvertiserSignOut()" class="text-sm font-semibold text-rose-700 hover:underline">Sign out</button>
+          </div>
+        </section>
+
+        <form id="advertise-form" onsubmit="handleAdvertiseSubmit(event)" novalidate class="hidden space-y-6">
           <!-- Section 1: Provider Information -->
           <div>
             <h2 class="text-base font-bold text-opc-blue mb-3">1. Provider Information</h2>
@@ -1077,6 +1154,9 @@
       renderPropertyListings();
       renderAdminPanel();
       initPhotoUploadControl();
+      opcSupabase.auth.getSession().then(({ data }) => {
+        if (data && data.session && state.currentView === "advertise") refreshAdvertiserPortal();
+      }).catch(() => {});
     });
 
     // Populate scalable community selector
@@ -1110,6 +1190,174 @@
       }, 3200);
     }
 
+    // ==================== ADVERTISER AUTHENTICATION ====================
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+      })[character]);
+    }
+
+    function showAdvertiserAuthMessage(message, type = "info") {
+      const box = document.getElementById("auth-message");
+      if (!box) return;
+      box.textContent = message;
+      box.className = "rounded-xl border p-3 text-sm " + (type === "error"
+        ? "bg-rose-50 border-rose-200 text-rose-800"
+        : type === "success"
+          ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+          : "bg-blue-50 border-blue-200 text-blue-800");
+    }
+
+    function setAuthBusy(formId, busy) {
+      const form = document.getElementById(formId);
+      if (!form) return;
+      const button = form.querySelector('button[type="submit"]');
+      if (button) {
+        button.disabled = busy;
+        button.classList.toggle("opacity-60", busy);
+        button.textContent = busy ? "Please wait..." : button.dataset.defaultLabel;
+      }
+    }
+
+    async function handleAdvertiserSignUp(event) {
+      event.preventDefault();
+      const email = document.getElementById("auth-signup-email").value.trim();
+      const password = document.getElementById("auth-signup-password").value;
+      const button = document.getElementById("auth-signup-button");
+      button.dataset.defaultLabel = "Create account";
+      setAuthBusy("advertiser-signup-form", true);
+      try {
+        const { data, error } = await opcSupabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: window.location.origin }
+        });
+        if (error) throw error;
+        if (data.session) {
+          showAdvertiserAuthMessage("Your account has been created. Complete the advertiser application below.", "success");
+          await refreshAdvertiserPortal();
+        } else {
+          showAdvertiserAuthMessage("Account created. Please check your email and confirm your address. Then return here and sign in to complete your advertiser application.", "success");
+        }
+      } catch (error) {
+        showAdvertiserAuthMessage(error.message || "We could not create your account. Please try again.", "error");
+      } finally {
+        setAuthBusy("advertiser-signup-form", false);
+      }
+    }
+
+    async function handleAdvertiserLogin(event) {
+      event.preventDefault();
+      const email = document.getElementById("auth-login-email").value.trim();
+      const password = document.getElementById("auth-login-password").value;
+      const button = document.getElementById("auth-login-button");
+      button.dataset.defaultLabel = "Sign in";
+      setAuthBusy("advertiser-login-form", true);
+      try {
+        const { error } = await opcSupabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        showAdvertiserAuthMessage("You are signed in. Checking your advertiser application...", "success");
+        await refreshAdvertiserPortal();
+      } catch (error) {
+        showAdvertiserAuthMessage(error.message || "Sign in failed. Check your email and password.", "error");
+      } finally {
+        setAuthBusy("advertiser-login-form", false);
+      }
+    }
+
+    async function refreshAdvertiserPortal() {
+      const { data: userData, error: userError } = await opcSupabase.auth.getUser();
+      if (userError || !userData.user) return;
+      const user = userData.user;
+      document.getElementById("advertiser-auth-forms").classList.add("hidden");
+      document.getElementById("advertiser-account-actions").classList.remove("hidden");
+      document.getElementById("advertiser-signed-in-email").textContent = "Signed in as " + user.email;
+
+      const { data: application, error } = await opcSupabase
+        .from("opc_advertisers")
+        .select("full_name, account_type, status, admin_notes")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) {
+        showAdvertiserAuthMessage("You are signed in, but we could not retrieve your application status. Please try refreshing the page.", "error");
+        return;
+      }
+
+      const applicationForm = document.getElementById("advertiser-application-form");
+      const statusBox = document.getElementById("advertiser-application-status");
+      statusBox.classList.add("hidden");
+      if (!application) {
+        applicationForm.classList.remove("hidden");
+        document.getElementById("advertiser-auth-forms").classList.add("hidden");
+        showAdvertiserAuthMessage("Your email is confirmed. Complete the application below to request advertiser approval.", "success");
+        return;
+      }
+
+      applicationForm.classList.add("hidden");
+      statusBox.classList.remove("hidden");
+      if (application.status === "approved") {
+        statusBox.className = "rounded-xl border border-emerald-200 bg-emerald-50 p-4";
+        statusBox.innerHTML = `<h3 class="font-bold text-emerald-900">Advertiser account approved</h3><p class="text-sm text-emerald-800 mt-1">Welcome, ${escapeHtml(application.full_name)}. Your advertiser registration has been approved. Property listing submission will be connected in the next implementation step.</p>`;
+      } else if (application.status === "rejected" || application.status === "suspended") {
+        statusBox.className = "rounded-xl border border-rose-200 bg-rose-50 p-4";
+        statusBox.innerHTML = `<h3 class="font-bold text-rose-900">Application ${application.status}</h3><p class="text-sm text-rose-800 mt-1">Please contact the Ogoja Property Connect team for clarification or next steps.</p>`;
+      } else {
+        statusBox.className = "rounded-xl border border-amber-200 bg-amber-50 p-4";
+        statusBox.innerHTML = `<h3 class="font-bold text-amber-900">Application pending review</h3><p class="text-sm text-amber-800 mt-1">Thank you, ${escapeHtml(application.full_name)}. Your application is awaiting administrator review. You will be able to submit property listings after approval.</p>`;
+      }
+    }
+
+    async function handleAdvertiserApplication(event) {
+      event.preventDefault();
+      const button = document.getElementById("app-submit-button");
+      button.dataset.defaultLabel = "Submit for administrator approval";
+      setAuthBusy("advertiser-application-form", true);
+      const { data: userData, error: userError } = await opcSupabase.auth.getUser();
+      if (userError || !userData.user) {
+        setAuthBusy("advertiser-application-form", false);
+        showAdvertiserAuthMessage("Please sign in again before submitting your application.", "error");
+        return;
+      }
+      const payload = {
+        user_id: userData.user.id,
+        full_name: document.getElementById("app-full-name").value.trim(),
+        account_type: document.getElementById("app-account-type").value,
+        phone_number: document.getElementById("app-phone").value.trim(),
+        whatsapp_number: document.getElementById("app-whatsapp").value.trim() || null,
+        community: document.getElementById("app-community").value.trim(),
+        verification_details: document.getElementById("app-verification-details").value.trim(),
+        status: "pending"
+      };
+      if (!payload.full_name || !payload.account_type || !payload.phone_number || !payload.community || !payload.verification_details) {
+        setAuthBusy("advertiser-application-form", false);
+        showAdvertiserAuthMessage("Please complete all required application fields.", "error");
+        return;
+      }
+      try {
+        const { error } = await opcSupabase.from("opc_advertisers").insert(payload);
+        if (error) throw error;
+        showAdvertiserAuthMessage("Your advertiser application has been submitted successfully.", "success");
+        await refreshAdvertiserPortal();
+      } catch (error) {
+        showAdvertiserAuthMessage(error.message || "We could not submit your application. Please try again.", "error");
+      } finally {
+        setAuthBusy("advertiser-application-form", false);
+      }
+    }
+
+    async function handleAdvertiserSignOut() {
+      const { error } = await opcSupabase.auth.signOut();
+      if (error) {
+        showAdvertiserAuthMessage(error.message, "error");
+        return;
+      }
+      document.getElementById("advertiser-auth-forms").classList.remove("hidden");
+      document.getElementById("advertiser-application-form").classList.add("hidden");
+      document.getElementById("advertiser-application-status").classList.add("hidden");
+      document.getElementById("advertiser-account-actions").classList.add("hidden");
+      showAdvertiserAuthMessage("You have signed out.", "success");
+    }
+
     // ==================== NAVIGATION ====================
     function navigateTo(view, propertyId = null) {
       const views = ["home", "details", "saved", "advertise", "admin"];
@@ -1129,6 +1377,8 @@
         renderSavedProperties();
       } else if (view === "admin") {
         renderAdminPanel();
+      } else if (view === "advertise") {
+        refreshAdvertiserPortal().catch(() => {});
       }
 
       window.scrollTo({ top: 0, behavior: "smooth" });
