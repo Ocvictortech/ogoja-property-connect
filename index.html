@@ -734,54 +734,25 @@
       </div>
     </div>
 
-    <!-- ==================== VIEW 5: ADMINISTRATOR REVIEW DEMO ==================== -->
+    <!-- PRIVATE OPC ADMINISTRATOR DASHBOARD -->
     <div id="view-admin" class="hidden fade-in max-w-5xl mx-auto px-4 sm:px-6 py-8">
-      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div class="text-xs text-amber-900">
-          <strong>PROTOTYPE ADMIN PREVIEW:</strong> This interface demonstrates listing moderation with sample data. In production, Supabase Row Level Security (RLS) will ensure only authenticated administrators can query non-public records or provider contact details.
-        </div>
-        <button onclick="navigateTo('home')" class="text-xs font-bold text-opc-blue hover:underline shrink-0">
-          Exit Admin Demo &rarr;
-        </button>
-      </div>
-
-      <h1 class="text-2xl font-bold text-slate-900 mb-1">Administrator Listing Review</h1>
-      <p class="text-sm text-slate-500 mb-6">
-        Review all submissions across <strong>Pending Review</strong>, <strong>Approved</strong>, <strong>Rejected</strong>, and <strong>Unavailable</strong> statuses.
-      </p>
-
-      <!-- 1. Pending Submissions Section -->
-      <div class="mb-8">
-        <h2 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-          Pending Review (<span id="admin-pending-count">0</span>)
-        </h2>
-        <div id="admin-pending-list" class="space-y-4">
-          <!-- Pending items rendered dynamically -->
-        </div>
-      </div>
-
-      <!-- 2. Approved & Unavailable Properties Section -->
-      <div class="mb-8">
-        <h2 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-          Approved &amp; Unavailable Properties (<span id="admin-approved-count">0</span>)
-        </h2>
-        <div id="admin-active-list" class="space-y-3">
-          <!-- Approved & Unavailable items rendered dynamically -->
-        </div>
-      </div>
-
-      <!-- 3. Rejected Properties Section -->
-      <div>
-        <h2 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-rose-600"></span>
-          Rejected Submissions (<span id="admin-rejected-count">0</span>)
-        </h2>
-        <div id="admin-rejected-list" class="space-y-3">
-          <!-- Rejected items rendered dynamically -->
-        </div>
-      </div>
+      <section id="admin-login-panel" class="max-w-md mx-auto bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sm:p-8">
+        <h1 class="text-2xl font-bold text-slate-900 mb-1">Administrator sign in</h1>
+        <p class="text-sm text-slate-500 mb-6">Restricted to authorised Ogoja Property Connect administrators.</p>
+        <form id="opc-admin-login-form" onsubmit="handleOpcAdminLogin(event)" class="space-y-4">
+          <div><label for="opc-admin-email" class="block text-xs font-semibold mb-1.5">Administrator email</label><input id="opc-admin-email" type="email" required autocomplete="username" class="w-full border border-slate-300 rounded-xl px-3 py-3 text-sm" placeholder="Enter admin email"></div>
+          <div><label for="opc-admin-password" class="block text-xs font-semibold mb-1.5">Password</label><input id="opc-admin-password" type="password" required autocomplete="current-password" class="w-full border border-slate-300 rounded-xl px-3 py-3 text-sm" placeholder="Enter password"></div>
+          <div id="opc-admin-auth-message" class="hidden text-xs rounded-lg p-3"></div>
+          <button id="opc-admin-login-button" type="submit" class="w-full bg-opc-purple text-white font-bold text-sm py-3 rounded-xl">Sign in securely</button>
+        </form>
+        <button type="button" onclick="navigateTo('home')" class="w-full mt-4 text-sm text-slate-500">Return to homepage</button>
+      </section>
+      <section id="admin-dashboard-panel" class="hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-7"><div><p class="text-xs font-bold uppercase tracking-wider text-opc-purple mb-1">Private administration</p><h1 class="text-2xl font-bold text-slate-900">OPC Admin Dashboard</h1><p id="opc-admin-session-email" class="text-xs text-slate-500 mt-1"></p></div><div class="flex gap-2"><button type="button" onclick="loadAdminApplications()" class="border border-slate-300 rounded-xl px-4 py-2 text-xs font-bold">Refresh</button><button type="button" onclick="handleOpcAdminSignOut()" class="bg-slate-900 text-white rounded-xl px-4 py-2 text-xs font-bold">Sign out</button></div></div>
+        <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 text-xs text-blue-900">Access is checked against the <strong>opc_admins</strong> table in Supabase. Advertiser decisions are saved to the database.</div>
+        <div class="mb-8"><div class="flex items-center justify-between gap-3 mb-3"><h2 class="text-base font-bold text-slate-900">Advertiser applications</h2><span id="opc-admin-application-count" class="text-xs font-semibold text-slate-500">Loading...</span></div><div id="opc-admin-applications-list" class="space-y-3"><div class="bg-white border border-slate-200 rounded-xl p-5 text-sm text-slate-500">Loading applications...</div></div></div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5"><h2 class="font-bold text-slate-900 text-sm mb-1">Property listing moderation</h2><p class="text-xs text-slate-600">The secure database permissions are prepared. Connecting property submissions and their review queue is the next implementation stage. The old browser-only demo controls are no longer used.</p></div>
+      </section>
     </div>
 
   </main>
@@ -824,7 +795,6 @@
           <li><button onclick="navigateTo('home')" class="hover:text-white transition-colors">Browse Accommodation</button></li>
           <li><button onclick="navigateTo('advertise')" class="hover:text-white transition-colors">Advertise a Property</button></li>
           <li><button onclick="navigateTo('saved')" class="hover:text-white transition-colors">Saved Properties</button></li>
-          <li><button onclick="navigateTo('admin')" class="text-slate-500 hover:text-purple-300 transition-colors">Admin Review Demo</button></li>
         </ul>
       </div>
 
@@ -841,7 +811,7 @@
     </div>
 
     <div class="border-t border-slate-800 py-4 px-4 text-center text-xs text-slate-500">
-      &copy; 2026 Ogoja Property Connect (OPC). Frontend Prototype — Sample Demonstration Data Only.
+      &copy; 2026 Ogoja Property Connect (OPC). Find. Connect. Move in.
     </div>
   </footer>
 
@@ -1152,11 +1122,11 @@
       renderCategoryPills();
       updateSavedBadge();
       renderPropertyListings();
-      renderAdminPanel();
       initPhotoUploadControl();
       opcSupabase.auth.getSession().then(({ data }) => {
         if (data && data.session && state.currentView === "advertise") refreshAdvertiserPortal();
       }).catch(() => {});
+      if (window.location.hash === "#admin") openOpcAdminDashboard();
     });
 
     // Populate scalable community selector
@@ -1360,27 +1330,15 @@
 
     // ==================== NAVIGATION ====================
     function navigateTo(view, propertyId = null) {
+      if (view === "admin") { openOpcAdminDashboard(); return; }
       const views = ["home", "details", "saved", "advertise", "admin"];
-      views.forEach(v => {
-        document.getElementById(`view-${v}`).classList.add("hidden");
-      });
-
+      views.forEach(v => document.getElementById(`view-${v}`).classList.add("hidden"));
       state.currentView = view;
       document.getElementById(`view-${view}`).classList.remove("hidden");
-
-      if (view === "home") {
-        renderPropertyListings();
-      } else if (view === "details" && propertyId) {
-        state.activePropertyId = propertyId;
-        renderPropertyDetails(propertyId);
-      } else if (view === "saved") {
-        renderSavedProperties();
-      } else if (view === "admin") {
-        renderAdminPanel();
-      } else if (view === "advertise") {
-        refreshAdvertiserPortal().catch(() => {});
-      }
-
+      if (view === "home") renderPropertyListings();
+      else if (view === "details" && propertyId) { state.activePropertyId = propertyId; renderPropertyDetails(propertyId); }
+      else if (view === "saved") renderSavedProperties();
+      else if (view === "advertise") refreshAdvertiserPortal().catch(() => {});
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -2189,179 +2147,97 @@
       document.getElementById("advertise-form").classList.remove("hidden");
     }
 
-    // ==================== ADMINISTRATOR REVIEW INTERFACE ====================
-    function renderAdminPanel() {
-      const pendingList = document.getElementById("admin-pending-list");
-      const activeList = document.getElementById("admin-active-list");
-      const rejectedList = document.getElementById("admin-rejected-list");
-
-      const pendingCount = document.getElementById("admin-pending-count");
-      const approvedCount = document.getElementById("admin-approved-count");
-      const rejectedCount = document.getElementById("admin-rejected-count");
-
-      const pendingProps = properties.filter(p => p.status === "Pending Review");
-      const activeProps = properties.filter(p => p.status === "Approved" || p.status === "Unavailable");
-      const rejectedProps = properties.filter(p => p.status === "Rejected");
-
-      pendingCount.textContent = pendingProps.length;
-      approvedCount.textContent = activeProps.length;
-      rejectedCount.textContent = rejectedProps.length;
-
-      // 1. Pending Review
-      if (pendingProps.length === 0) {
-        pendingList.innerHTML = `
-          <div class="bg-white rounded-xl border border-slate-200 p-6 text-center text-sm text-slate-500">
-            No pending property submissions right now. Try submitting one via "Advertise Property".
-          </div>
-        `;
-      } else {
-        pendingList.innerHTML = pendingProps
-          .map(
-            p => `
-            <div class="bg-white rounded-2xl border border-amber-200 p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <div class="flex flex-wrap items-center gap-2 mb-1">
-                  <span class="bg-amber-100 text-amber-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
-                    Pending Review
-                  </span>
-                  <span class="text-xs font-semibold text-opc-purple">${p.category}</span>
-                  <span class="text-xs text-slate-400">&bull; Ref: ${p.id}</span>
-                </div>
-                <h3 class="font-bold text-slate-900 text-base">${p.title}</h3>
-                <p class="text-xs text-slate-600 mt-0.5">
-                  Location: <strong>${p.community}, ${p.town}</strong> (${p.landmark}) &bull; Annual Rent: <strong>${formatNGN(p.annualRent)}/yr</strong>
-                </p>
-                <p class="text-xs text-slate-500 mt-1">
-                  Submitted by: <strong>${p.provider.name}</strong> (${p.provider.type}) &bull; Phone: ${p.provider.phone}
-                </p>
-              </div>
-
-              <div class="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onclick="adminUpdateStatus('${p.id}', 'Approved')"
-                  class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
-                >
-                  Approve
-                </button>
-                <button
-                  type="button"
-                  onclick="adminUpdateStatus('${p.id}', 'Rejected')"
-                  class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
-                >
-                  Reject
-                </button>
-              </div>
-            </div>
-          `
-          )
-          .join("");
-      }
-
-      // 2. Approved & Unavailable
-      if (activeProps.length === 0) {
-        activeList.innerHTML = `
-          <div class="bg-white rounded-xl border border-slate-200 p-5 text-center text-xs text-slate-500">
-            No approved or unavailable properties found.
-          </div>
-        `;
-      } else {
-        activeList.innerHTML = activeProps
-          .map(
-            p => `
-            <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <div class="flex flex-wrap items-center gap-2">
-                  <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
-                    p.status === "Approved"
-                      ? "bg-emerald-100 text-emerald-800"
-                      : "bg-slate-200 text-slate-700"
-                  }">
-                    ${p.status === "Approved" ? "Approved (Public)" : "Unavailable (Hidden)"}
-                  </span>
-                  <span class="text-xs text-slate-400">Ref: ${p.id} &bull; ${p.community}</span>
-                </div>
-                <h4 class="font-bold text-slate-900 text-sm mt-1">${p.title}</h4>
-              </div>
-
-              <div class="flex items-center gap-2 shrink-0">
-                ${
-                  p.status === "Approved"
-                    ? `<button
-                        type="button"
-                        onclick="adminUpdateStatus('${p.id}', 'Unavailable')"
-                        class="border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl transition-colors"
-                      >
-                        Mark Unavailable
-                      </button>`
-                    : `<button
-                        type="button"
-                        onclick="adminUpdateStatus('${p.id}', 'Approved')"
-                        class="bg-opc-blue hover:bg-opc-blueDark text-white text-xs font-semibold px-3 py-2 rounded-xl transition-colors"
-                      >
-                        Mark Approved / Available
-                      </button>`
-                }
-              </div>
-            </div>
-          `
-          )
-          .join("");
-      }
-
-      // 3. Rejected
-      if (rejectedProps.length === 0) {
-        rejectedList.innerHTML = `
-          <div class="bg-white rounded-xl border border-slate-200 p-5 text-center text-xs text-slate-500">
-            No rejected submissions.
-          </div>
-        `;
-      } else {
-        rejectedList.innerHTML = rejectedProps
-          .map(
-            p => `
-            <div class="bg-white rounded-xl border border-rose-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <div class="flex flex-wrap items-center gap-2">
-                  <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800">
-                    Rejected (Hidden)
-                  </span>
-                  <span class="text-xs text-slate-400">Ref: ${p.id} &bull; ${p.community}</span>
-                </div>
-                <h4 class="font-bold text-slate-900 text-sm mt-1">${p.title}</h4>
-                <p class="text-xs text-slate-500 mt-0.5">Submitted by: ${p.provider.name} (${p.provider.phone})</p>
-              </div>
-            </div>
-          `
-          )
-          .join("");
-      }
+    // ==================== PRIVATE OPC ADMINISTRATION ====================
+    function showOpcAdminMessage(message, type = "error") {
+      const el = document.getElementById("opc-admin-auth-message"); if (!el) return;
+      el.textContent = message;
+      el.className = `text-xs rounded-lg p-3 ${type === "success" ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800"}`;
     }
 
-    function adminUpdateStatus(id, newStatus) {
-      const prop = properties.find(p => p.id === id);
-      if (!prop) return;
-      prop.status = newStatus;
-
-      // Sync status change to localStorage if this was a user-submitted prototype listing
-      try {
-        const stored = JSON.parse(localStorage.getItem("opc_prototype_submissions") || "[]");
-        const idx = stored.findIndex(item => item.id === id);
-        if (idx > -1) {
-          stored[idx].status = newStatus;
-          localStorage.setItem("opc_prototype_submissions", JSON.stringify(stored));
-        }
-      } catch (e) {
-        // Ignore storage errors
-      }
-
-      updateSavedBadge();
-      showToast(
-        `Listing "${prop.title}" updated to ${newStatus}.`,
-        newStatus === "Approved" ? "success" : "warning"
-      );
-      renderAdminPanel();
+    async function openOpcAdminDashboard() {
+      ["home", "details", "saved", "advertise", "admin"].forEach(v => document.getElementById(`view-${v}`).classList.add("hidden"));
+      state.currentView = "admin";
+      document.getElementById("view-admin").classList.remove("hidden");
+      document.getElementById("admin-login-panel").classList.remove("hidden");
+      document.getElementById("admin-dashboard-panel").classList.add("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      const { data, error } = await opcSupabase.auth.getSession();
+      if (error) { showOpcAdminMessage("Could not verify your session. Please sign in again."); return; }
+      if (data.session) await verifyOpcAdmin(data.session.user);
     }
+
+    async function verifyOpcAdmin(user) {
+      if (!user) return false;
+      const { data, error } = await opcSupabase.from("opc_admins").select("user_id").eq("user_id", user.id).maybeSingle();
+      if (error || !data) {
+        document.getElementById("admin-dashboard-panel").classList.add("hidden");
+        document.getElementById("admin-login-panel").classList.remove("hidden");
+        showOpcAdminMessage(error ? "Administrator verification failed. Check the opc_admins table permissions and try again." : "This account is not authorised to access the administrator dashboard.");
+        if (error) console.error("OPC admin verification:", error);
+        return false;
+      }
+      document.getElementById("admin-login-panel").classList.add("hidden");
+      document.getElementById("admin-dashboard-panel").classList.remove("hidden");
+      document.getElementById("opc-admin-session-email").textContent = user.email || "Authenticated administrator";
+      await loadAdminApplications(); return true;
+    }
+
+    async function handleOpcAdminLogin(event) {
+      event.preventDefault(); const button = document.getElementById("opc-admin-login-button");
+      button.disabled = true; button.textContent = "Verifying account...";
+      const email = document.getElementById("opc-admin-email").value.trim();
+      const password = document.getElementById("opc-admin-password").value;
+      const { data, error } = await opcSupabase.auth.signInWithPassword({ email, password });
+      button.disabled = false; button.textContent = "Sign in securely";
+      if (error) { showOpcAdminMessage(error.message); return; }
+      if (!(await verifyOpcAdmin(data.user))) await opcSupabase.auth.signOut();
+    }
+
+    async function handleOpcAdminSignOut() {
+      const { error } = await opcSupabase.auth.signOut();
+      if (error) { showToast("Unable to sign out. Please try again.", "warning"); return; }
+      document.getElementById("admin-dashboard-panel").classList.add("hidden");
+      document.getElementById("admin-login-panel").classList.remove("hidden");
+      document.getElementById("opc-admin-login-form").reset();
+      showOpcAdminMessage("You have signed out.", "success");
+    }
+
+    function escapeAdminText(value) {
+      return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    }
+
+    async function loadAdminApplications() {
+      const list = document.getElementById("opc-admin-applications-list");
+      const count = document.getElementById("opc-admin-application-count");
+      list.innerHTML = '<div class="bg-white border border-slate-200 rounded-xl p-5 text-sm text-slate-500">Loading applications...</div>';
+      const { data, error } = await opcSupabase.from("opc_advertisers").select("user_id, full_name, account_type, phone_number, whatsapp_number, community, verification_details, status, created_at").order("created_at", { ascending: false });
+      if (error) { count.textContent = "Could not load"; list.innerHTML = `<div class="bg-rose-50 border border-rose-200 rounded-xl p-4 text-sm text-rose-800">${escapeAdminText(error.message)}</div>`; return; }
+      count.textContent = `${data.length} application${data.length === 1 ? "" : "s"}`;
+      if (!data.length) { list.innerHTML = '<div class="bg-white border border-slate-200 rounded-xl p-5 text-sm text-slate-500">There are no advertiser applications yet.</div>'; return; }
+      list.innerHTML = data.map(app => {
+        const pending = app.status === "pending";
+        const statusClass = app.status === "approved" ? "bg-emerald-100 text-emerald-800" : app.status === "rejected" ? "bg-rose-100 text-rose-800" : app.status === "suspended" ? "bg-slate-200 text-slate-700" : "bg-amber-100 text-amber-800";
+        return `<article class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5"><div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div class="font-bold text-slate-900">${escapeAdminText(app.full_name)}</div><span class="text-[11px] font-bold uppercase rounded-full px-2.5 py-1 ${statusClass}">${escapeAdminText(app.status)}</span></div><div class="grid sm:grid-cols-2 gap-x-5 gap-y-2 text-xs text-slate-600"><p><strong>Account type:</strong> ${escapeAdminText(app.account_type)}</p><p><strong>Community:</strong> ${escapeAdminText(app.community)}</p><p><strong>Phone:</strong> ${escapeAdminText(app.phone_number)}</p><p><strong>WhatsApp:</strong> ${escapeAdminText(app.whatsapp_number || "Not provided")}</p><p class="sm:col-span-2"><strong>Verification details:</strong> ${escapeAdminText(app.verification_details || "Not provided")}</p><p class="sm:col-span-2 text-slate-400"><strong>Submitted:</strong> ${app.created_at ? new Date(app.created_at).toLocaleString() : "Date unavailable"}</p></div>${pending ? `<div class="flex flex-wrap gap-2 mt-4"><button type="button" onclick="reviewAdvertiserApplication('${app.user_id}', 'approved')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg">Approve advertiser</button><button type="button" onclick="reviewAdvertiserApplication('${app.user_id}', 'rejected')" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg">Reject application</button></div>` : ""}</article>`;
+      }).join("");
+    }
+
+    async function reviewAdvertiserApplication(userId, newStatus) {
+      const decision = newStatus === "approved" ? "approve this advertiser" : "reject this application";
+      if (!window.confirm(`Are you sure you want to ${decision}?`)) return;
+      const { data: userData, error: userError } = await opcSupabase.auth.getUser();
+      if (userError || !userData.user) { showToast("Your administrator session has expired. Sign in again.", "warning"); await openOpcAdminDashboard(); return; }
+      const { error } = await opcSupabase.from("opc_advertisers").update({ status: newStatus, reviewed_by: userData.user.id, reviewed_at: new Date().toISOString() }).eq("user_id", userId).eq("status", "pending");
+      if (error) { showToast(`Could not update application: ${error.message}`, "warning"); return; }
+      showToast(`Advertiser application ${newStatus}.`, "success"); await loadAdminApplications();
+    }
+
+    opcSupabase.auth.onAuthStateChange((_event, session) => {
+      if (state.currentView === "admin" && !session) {
+        document.getElementById("admin-dashboard-panel").classList.add("hidden");
+        document.getElementById("admin-login-panel").classList.remove("hidden");
+      }
+    });
+
   </script>
 </body>
 </html>
