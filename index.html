@@ -2127,10 +2127,12 @@
           advertiser_user_id: user.id,
           images: uploadedImagePaths
         };
-        const { data: inserted, error: insertError } = await opcSupabase.from("properties").insert(payload).select("id").single();
+        const { error: insertError } = await opcSupabase.from("properties").insert(payload);
         if (insertError) throw insertError;
 
-        document.getElementById("ad-ref-id").textContent = inserted.id;
+        // Do not request the newly inserted row. Pending properties are intentionally
+        // hidden by the public SELECT policy, so INSERT ... RETURNING would be denied.
+        document.getElementById("ad-ref-id").textContent = referenceId;
         document.getElementById("advertise-form").classList.add("hidden");
         document.getElementById("ad-success-box").classList.remove("hidden");
         showToast("Your property has been submitted for administrator review.", "success");
