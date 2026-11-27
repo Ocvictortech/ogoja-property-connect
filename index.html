@@ -768,8 +768,20 @@
     </div>
   </footer>
 
+  <!-- Supabase JavaScript client for secure user authentication and database access -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <!-- ==================== JAVASCRIPT APPLICATION LOGIC ==================== -->
   <script>
+    // ==================== SUPABASE CONNECTION ====================
+    // The publishable key is intended for browser use. Database security is enforced by RLS.
+    const OPC_SUPABASE_URL = "https://qxjcdngvoptqfvkfdxkw.supabase.co";
+    const OPC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_NLsgdkl123UMFoGjMuQNBQ_JYiVUkHR";
+    const opcSupabase = window.supabase.createClient(
+      OPC_SUPABASE_URL,
+      OPC_SUPABASE_PUBLISHABLE_KEY
+    );
+
     /**
      * 1. SCALABLE LOCATION HIERARCHY
      * Designed so new LGAs, towns, and communities across Cross River State
