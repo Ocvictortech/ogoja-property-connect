@@ -748,10 +748,18 @@
         <button type="button" onclick="navigateTo('home')" class="w-full mt-4 text-sm text-slate-500">Return to homepage</button>
       </section>
       <section id="admin-dashboard-panel" class="hidden">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-7"><div><p class="text-xs font-bold uppercase tracking-wider text-opc-purple mb-1">Private administration</p><h1 class="text-2xl font-bold text-slate-900">OPC Admin Dashboard</h1><p id="opc-admin-session-email" class="text-xs text-slate-500 mt-1"></p></div><div class="flex gap-2"><button type="button" onclick="loadAdminApplications()" class="border border-slate-300 rounded-xl px-4 py-2 text-xs font-bold">Refresh</button><button type="button" onclick="handleOpcAdminSignOut()" class="bg-slate-900 text-white rounded-xl px-4 py-2 text-xs font-bold">Sign out</button></div></div>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-7"><div><p class="text-xs font-bold uppercase tracking-wider text-opc-purple mb-1">Private administration</p><h1 class="text-2xl font-bold text-slate-900">OPC Admin Dashboard</h1><p id="opc-admin-session-email" class="text-xs text-slate-500 mt-1"></p></div><div class="flex gap-2"><button type="button" onclick="refreshAdminDashboard()" class="border border-slate-300 rounded-xl px-4 py-2 text-xs font-bold">Refresh</button><button type="button" onclick="handleOpcAdminSignOut()" class="bg-slate-900 text-white rounded-xl px-4 py-2 text-xs font-bold">Sign out</button></div></div>
         <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 text-xs text-blue-900">Access is checked against the <strong>opc_admins</strong> table in Supabase. Advertiser decisions are saved to the database.</div>
         <div class="mb-8"><div class="flex items-center justify-between gap-3 mb-3"><h2 class="text-base font-bold text-slate-900">Advertiser applications</h2><span id="opc-admin-application-count" class="text-xs font-semibold text-slate-500">Loading...</span></div><div id="opc-admin-applications-list" class="space-y-3"><div class="bg-white border border-slate-200 rounded-xl p-5 text-sm text-slate-500">Loading applications...</div></div></div>
-        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5"><h2 class="font-bold text-slate-900 text-sm mb-1">Property listing moderation</h2><p class="text-xs text-slate-600">The secure database permissions are prepared. Connecting property submissions and their review queue is the next implementation stage. The old browser-only demo controls are no longer used.</p></div>
+        <div class="mt-8">
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <h2 class="text-base font-bold text-slate-900">Property listing review</h2>
+            <span id="opc-admin-property-count" class="text-xs font-semibold text-slate-500">Loading...</span>
+          </div>
+          <div id="opc-admin-properties-list" class="space-y-4">
+            <div class="bg-white border border-slate-200 rounded-xl p-5 text-sm text-slate-500">Loading property submissions...</div>
+          </div>
+        </div>
       </section>
     </div>
 
@@ -1122,12 +1130,63 @@
       renderCategoryPills();
       updateSavedBadge();
       renderPropertyListings();
+      loadPublicPropertiesFromSupabase();
       initPhotoUploadControl();
       opcSupabase.auth.getSession().then(({ data }) => {
         if (data && data.session && state.currentView === "advertise") refreshAdvertiserPortal();
       }).catch(() => {});
       if (window.location.hash === "#admin") openOpcAdminDashboard();
     });
+
+    // Load only approved and available database listings for public discovery.
+    async function loadPublicPropertiesFromSupabase() {
+      const { data, error } = await opcSupabase
+        .from("properties")
+        .select("*")
+        .eq("status", "approved")
+        .eq("availability", "available")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.warn("Could not load live OPC property listings:", error.message);
+        return;
+      }
+
+      const liveProperties = (data || []).map(row => ({
+        id: row.id,
+        title: row.title,
+        category: row.accommodation_type,
+        state: row.state,
+        town: row.town,
+        community: row.community,
+        landmark: row.street_address || row.landmark || "",
+        annualRent: Number(row.annual_rent || 0),
+        agreementFee: row.agreement_fee_applies ? Number(row.agreement_fee_amount || 0) : 0,
+        agencyFee: row.agency_fee_applies ? Number(row.agency_fee_amount || 0) : 0,
+        cautionFee: row.caution_fee_applies ? Number(row.caution_fee_amount || 0) : 0,
+        otherChargesAmount: row.other_fee_applies ? Number(row.other_fee_amount || 0) : 0,
+        otherChargesNote: row.other_fee_applies ? row.other_fee_description || "" : "",
+        description: row.description || "",
+        facilities: Array.isArray(row.facilities) ? row.facilities : [],
+        providerType: row.provider_type,
+        providerName: row.provider_name,
+        phone: row.phone_number,
+        whatsapp: row.whatsapp_number,
+        status: "Approved",
+        availability: "Available",
+        images: Array.isArray(row.images) ? row.images : [],
+        source: "supabase"
+      }));
+
+      const liveIds = new Set(liveProperties.map(item => String(item.id)));
+      properties = properties.filter(item => !liveIds.has(String(item.id)) && item.source !== "supabase");
+      properties = [...liveProperties, ...properties];
+
+      if (state.currentView === "home") renderPropertyListings();
+      if (state.currentView === "details" && state.activePropertyId) {
+        renderPropertyDetails(state.activePropertyId);
+      }
+    }
 
     // Populate scalable community selector
     function populateLocationDropdown() {
@@ -2208,7 +2267,7 @@
       document.getElementById("admin-login-panel").classList.add("hidden");
       document.getElementById("admin-dashboard-panel").classList.remove("hidden");
       document.getElementById("opc-admin-session-email").textContent = user.email || "Authenticated administrator";
-      await loadAdminApplications(); return true;
+      await refreshAdminDashboard(); return true;
     }
 
     async function handleOpcAdminLogin(event) {
@@ -2235,6 +2294,10 @@
       return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
     }
 
+    async function refreshAdminDashboard() {
+      await Promise.all([loadAdminApplications(), loadAdminProperties()]);
+    }
+
     async function loadAdminApplications() {
       const list = document.getElementById("opc-admin-applications-list");
       const count = document.getElementById("opc-admin-application-count");
@@ -2248,6 +2311,151 @@
         const statusClass = app.status === "approved" ? "bg-emerald-100 text-emerald-800" : app.status === "rejected" ? "bg-rose-100 text-rose-800" : app.status === "suspended" ? "bg-slate-200 text-slate-700" : "bg-amber-100 text-amber-800";
         return `<article class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5"><div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div class="font-bold text-slate-900">${escapeAdminText(app.full_name)}</div><span class="text-[11px] font-bold uppercase rounded-full px-2.5 py-1 ${statusClass}">${escapeAdminText(app.status)}</span></div><div class="grid sm:grid-cols-2 gap-x-5 gap-y-2 text-xs text-slate-600"><p><strong>Account type:</strong> ${escapeAdminText(app.account_type)}</p><p><strong>Community:</strong> ${escapeAdminText(app.community)}</p><p><strong>Phone:</strong> ${escapeAdminText(app.phone_number)}</p><p><strong>WhatsApp:</strong> ${escapeAdminText(app.whatsapp_number || "Not provided")}</p><p class="sm:col-span-2"><strong>Verification details:</strong> ${escapeAdminText(app.verification_details || "Not provided")}</p><p class="sm:col-span-2 text-slate-400"><strong>Submitted:</strong> ${app.created_at ? new Date(app.created_at).toLocaleString() : "Date unavailable"}</p></div>${pending ? `<div class="flex flex-wrap gap-2 mt-4"><button type="button" onclick="reviewAdvertiserApplication('${app.user_id}', 'approved')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg">Approve advertiser</button><button type="button" onclick="reviewAdvertiserApplication('${app.user_id}', 'rejected')" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg">Reject application</button></div>` : ""}</article>`;
       }).join("");
+    }
+
+    async function loadAdminProperties() {
+      const list = document.getElementById("opc-admin-properties-list");
+      const count = document.getElementById("opc-admin-property-count");
+      if (!list || !count) return;
+      list.innerHTML = '<div class="bg-white border border-slate-200 rounded-xl p-5 text-sm text-slate-500">Loading property submissions...</div>';
+
+      const { data, error } = await opcSupabase
+        .from("properties")
+        .select("*")
+        .in("status", ["pending_review", "approved", "rejected"])
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        count.textContent = "Could not load";
+        list.innerHTML = `<div class="bg-rose-50 border border-rose-200 rounded-xl p-4 text-sm text-rose-800">${escapeAdminText(error.message)}</div>`;
+        return;
+      }
+
+      const pendingCount = data.filter(item => item.status === "pending_review").length;
+      count.textContent = `${pendingCount} awaiting review · ${data.length} total`;
+      if (!data.length) {
+        list.innerHTML = '<div class="bg-white border border-slate-200 rounded-xl p-5 text-sm text-slate-500">No property submissions have been received yet.</div>';
+        return;
+      }
+
+      list.innerHTML = data.map(item => {
+        const statusLabel = item.status === "pending_review" ? "Pending Review" : item.status === "approved" ? "Approved" : "Rejected";
+        const statusClass = item.status === "approved" ? "bg-emerald-100 text-emerald-800" : item.status === "rejected" ? "bg-rose-100 text-rose-800" : "bg-amber-100 text-amber-800";
+        const imagePaths = Array.isArray(item.images) ? item.images : [];
+        const rent = Number(item.annual_rent || 0).toLocaleString("en-NG");
+        const fees = [
+          item.agreement_fee_applies ? `Agreement ₦${Number(item.agreement_fee_amount).toLocaleString("en-NG")}` : null,
+          item.agency_fee_applies ? `Agency ₦${Number(item.agency_fee_amount).toLocaleString("en-NG")}` : null,
+          item.caution_fee_applies ? `Caution ₦${Number(item.caution_fee_amount).toLocaleString("en-NG")}` : null,
+          item.other_fee_applies ? `${escapeAdminText(item.other_fee_description || "Other")} ₦${Number(item.other_fee_amount).toLocaleString("en-NG")}` : null
+        ].filter(Boolean).join(" · ") || "No additional fees declared";
+
+        return `<article class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div><h3 class="font-bold text-slate-900">${escapeAdminText(item.title)}</h3><p class="text-[11px] text-slate-500 mt-1">Reference: ${escapeAdminText(item.id)}</p></div>
+            <span class="text-[11px] font-bold uppercase rounded-full px-2.5 py-1 ${statusClass}">${statusLabel}</span>
+          </div>
+          <div id="opc-property-images-${escapeAdminText(item.id)}" class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+            ${imagePaths.length ? imagePaths.map(() => '<div class="h-24 rounded-lg bg-slate-100 animate-pulse"></div>').join("") : '<p class="text-xs text-slate-500 col-span-full">No photographs attached.</p>'}
+          </div>
+          <div class="grid sm:grid-cols-2 gap-x-5 gap-y-2 text-xs text-slate-600">
+            <p><strong>Type:</strong> ${escapeAdminText(item.accommodation_type)}</p>
+            <p><strong>Provider:</strong> ${escapeAdminText(item.provider_name)} (${escapeAdminText(item.provider_type)})</p>
+            <p><strong>Location:</strong> ${escapeAdminText([item.community, item.town, item.state].filter(Boolean).join(", "))}</p>
+            <p><strong>Landmark/address:</strong> ${escapeAdminText(item.street_address || item.landmark || "Not provided")}</p>
+            <p><strong>Annual rent:</strong> ₦${rent}</p>
+            <p><strong>Phone:</strong> ${escapeAdminText(item.phone_number)}</p>
+            <p><strong>WhatsApp:</strong> ${escapeAdminText(item.whatsapp_number || "Not provided")}</p>
+            <p class="sm:col-span-2"><strong>Additional charges:</strong> ${fees}</p>
+            <p class="sm:col-span-2"><strong>Description:</strong> ${escapeAdminText(item.description)}</p>
+            <p class="sm:col-span-2 text-slate-400"><strong>Submitted:</strong> ${item.created_at ? new Date(item.created_at).toLocaleString() : "Date unavailable"}</p>
+          </div>
+          ${item.status === "pending_review" ? `<div class="flex flex-wrap gap-2 mt-4">
+            <button type="button" onclick="reviewPropertyListing('${escapeAdminText(item.id)}', 'approved')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg">Approve and publish</button>
+            <button type="button" onclick="reviewPropertyListing('${escapeAdminText(item.id)}', 'rejected')" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg">Reject listing</button>
+          </div>` : ""}
+        </article>`;
+      }).join("");
+
+      // Pending photos are private. Generate short-lived signed preview links for the admin.
+      for (const item of data) {
+        const paths = Array.isArray(item.images) ? item.images : [];
+        const holder = document.getElementById(`opc-property-images-${item.id}`);
+        if (!holder || !paths.length) continue;
+        const bucket = item.status === "approved" ? "property-images" : "pending-property-images";
+        const urls = await Promise.all(paths.map(async path => {
+          if (/^https?:\/\//i.test(path)) return path;
+          const { data: signed, error: signError } = await opcSupabase.storage.from(bucket).createSignedUrl(path, 1800);
+          return signError ? null : signed.signedUrl;
+        }));
+        holder.innerHTML = urls.filter(Boolean).map(url => `<a href="${escapeAdminText(url)}" target="_blank" rel="noopener noreferrer"><img src="${escapeAdminText(url)}" alt="Submitted property photograph" class="w-full h-24 object-cover rounded-lg border border-slate-200"></a>`).join("") || '<p class="text-xs text-rose-700 col-span-full">Photograph preview unavailable.</p>';
+      }
+    }
+
+    async function reviewPropertyListing(propertyId, decision) {
+      const approving = decision === "approved";
+      const confirmation = approving
+        ? "Approve this property and publish its photographs? It will become visible to the public."
+        : "Reject this property submission? Its photographs will remain private.";
+      if (!window.confirm(confirmation)) return;
+
+      const button = [...document.querySelectorAll(`button[onclick*="${propertyId}"]`)];
+      button.forEach(el => { el.disabled = true; });
+
+      try {
+        const { data: property, error: fetchError } = await opcSupabase
+          .from("properties").select("*").eq("id", propertyId).eq("status", "pending_review").single();
+        if (fetchError) throw fetchError;
+
+        let publishedImages = [];
+        if (approving) {
+          const paths = Array.isArray(property.images) ? property.images : [];
+          for (let index = 0; index < paths.length; index++) {
+            const oldPath = paths[index];
+            if (/^https?:\/\//i.test(oldPath)) {
+              publishedImages.push(oldPath);
+              continue;
+            }
+            const { data: fileData, error: downloadError } = await opcSupabase
+              .storage.from("pending-property-images").download(oldPath);
+            if (downloadError) throw new Error(`Could not retrieve photograph ${index + 1}: ${downloadError.message}`);
+
+            const extension = (oldPath.split(".").pop() || "jpg").toLowerCase();
+            const newPath = `${propertyId}/${index + 1}-${crypto.randomUUID()}.${extension}`;
+            const contentType = fileData.type || (extension === "png" ? "image/png" : extension === "webp" ? "image/webp" : "image/jpeg");
+            const { error: uploadError } = await opcSupabase.storage.from("property-images").upload(newPath, fileData, {
+              cacheControl: "3600", upsert: false, contentType
+            });
+            if (uploadError) throw new Error(`Could not publish photograph ${index + 1}: ${uploadError.message}`);
+
+            const { data: publicData } = opcSupabase.storage.from("property-images").getPublicUrl(newPath);
+            publishedImages.push(publicData.publicUrl);
+          }
+        }
+
+        const updatePayload = approving
+          ? { status: "approved", images: publishedImages, updated_at: new Date().toISOString() }
+          : { status: "rejected", updated_at: new Date().toISOString() };
+
+        const { error: updateError } = await opcSupabase
+          .from("properties").update(updatePayload).eq("id", propertyId).eq("status", "pending_review");
+        if (updateError) throw updateError;
+
+        if (approving) {
+          // Remove private originals only after the database has been updated successfully.
+          const originals = (Array.isArray(property.images) ? property.images : []).filter(path => !/^https?:\/\//i.test(path));
+          if (originals.length) {
+            const { error: removeError } = await opcSupabase.storage.from("pending-property-images").remove(originals);
+            if (removeError) console.warn("Published photos, but private originals could not be removed:", removeError.message);
+          }
+        }
+
+        showToast(approving ? "Property approved and published." : "Property rejected. Its photos remain private.", "success");
+        await loadAdminProperties();
+      } catch (error) {
+        showToast(`Property review failed: ${error.message || error}`, "warning");
+        await loadAdminProperties();
+      }
     }
 
     async function reviewAdvertiserApplication(userId, newStatus) {
